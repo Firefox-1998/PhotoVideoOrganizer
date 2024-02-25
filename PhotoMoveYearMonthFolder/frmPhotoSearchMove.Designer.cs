@@ -36,6 +36,7 @@
             Fbd_DirSel = new FolderBrowserDialog();
             LblNumFiles = new Label();
             LblFileProc = new Label();
+            Btn_Cancel = new Button();
             SuspendLayout();
             // 
             // Lbl_DirSearch
@@ -78,7 +79,7 @@
             // 
             // Btn_Start
             // 
-            Btn_Start.Location = new Point(360, 705);
+            Btn_Start.Location = new Point(360, 655);
             Btn_Start.Name = "Btn_Start";
             Btn_Start.Size = new Size(102, 44);
             Btn_Start.TabIndex = 4;
@@ -102,17 +103,29 @@
             // LblFileProc
             // 
             LblFileProc.AutoSize = true;
-            LblFileProc.Location = new Point(192, 737);
+            LblFileProc.Location = new Point(192, 734);
             LblFileProc.Name = "LblFileProc";
             LblFileProc.Size = new Size(12, 15);
             LblFileProc.TabIndex = 6;
             LblFileProc.Text = "-";
+            // 
+            // Btn_Cancel
+            // 
+            Btn_Cancel.Enabled = false;
+            Btn_Cancel.Location = new Point(360, 705);
+            Btn_Cancel.Name = "Btn_Cancel";
+            Btn_Cancel.Size = new Size(102, 44);
+            Btn_Cancel.TabIndex = 7;
+            Btn_Cancel.Text = "Cancel";
+            Btn_Cancel.UseVisualStyleBackColor = true;
+            Btn_Cancel.Click += Btn_Cancel_Click;
             // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(474, 761);
+            Controls.Add(Btn_Cancel);
             Controls.Add(LblFileProc);
             Controls.Add(LblNumFiles);
             Controls.Add(Btn_Start);
@@ -138,5 +151,6 @@
         private FolderBrowserDialog Fbd_DirSel;
         private Label LblNumFiles;
         private Label LblFileProc;
+        private Button Btn_Cancel;
     }
 }

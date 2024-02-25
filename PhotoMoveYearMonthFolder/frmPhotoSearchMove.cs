@@ -1,5 +1,4 @@
 using System.Globalization;
-using static System.Windows.Forms.Design.AxImporter;
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -14,12 +13,13 @@ namespace PhotoMoveYearMonthFolder
         private string sDestDir = "";
         private readonly object fileLock = new();
         private bool isProcessing = false;
-
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
         private int processedFiles = 0;
 
         public FrmPhotoSearchMove()
         {
             InitializeComponent();
+
             for (int i = 0; i < Lbl_Desc.Length; i++)
             {
                 Lbl_Desc[i] = new Label
@@ -50,6 +50,7 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
+                Btn_Cancel.Enabled = true;
                 processedFiles = 0;
 
                 /*
@@ -67,12 +68,12 @@ namespace PhotoMoveYearMonthFolder
                     var tasks = new List<Task>();
                     long numFiles = files.Count();
 
-                    LblNumFiles.Text = "Num. file da processare: " + numFiles;                    
+                    LblNumFiles.Text = "Num. file da processare: " + numFiles;
 
                     int i = 0;
                     /*_ = Parallel.ForEach(files, options, (file) =>*/
                     _ = Parallel.ForEach(files, (file) =>
-                    {                        
+                    {
                         // Controlla se è un file immagine
                         if (IsValidFile(file))
                         {
@@ -80,7 +81,7 @@ namespace PhotoMoveYearMonthFolder
                             var label1 = LblFileProc;
                             tasks.Add(Task.Run(async () =>
                             {
-                                await semaphore.WaitAsync();
+                                await semaphore.WaitAsync(_cancellationTokenSource.Token);
                                 try
                                 {
                                     await ProcessFileAsync(file, label, label1);
@@ -104,6 +105,7 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirDest.Enabled = true;
                 Btn_DirSearch.Enabled = true;
                 Btn_Start.Enabled = true;
+                Btn_Cancel.Enabled = false;
             }
             isProcessing = false;
         }
@@ -170,7 +172,7 @@ namespace PhotoMoveYearMonthFolder
                 else
                 {
                     label.Invoke((Action)(() => label.Text = file));
-                }                
+                }
 
                 // Ottieni i primi sei caratteri del nome file
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
@@ -220,7 +222,7 @@ namespace PhotoMoveYearMonthFolder
                     {
                         await CopyFileAsync(file, destinazioneFile);
                     }
-                                        
+
                     label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
                 }
             }
@@ -244,6 +246,11 @@ namespace PhotoMoveYearMonthFolder
             using FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
             using var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
             await sourceStream.CopyToAsync(destinationStream);
+        }
+
+        private void Btn_Cancel_Click(object sender, EventArgs e)
+        {
+            _cancellationTokenSource.Cancel();
         }
     }
 }
