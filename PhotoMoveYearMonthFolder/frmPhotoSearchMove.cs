@@ -1,13 +1,10 @@
-using System.Collections.Concurrent;
 using System.Globalization;
-using System.Threading;
 
 namespace PhotoMoveYearMonthFolder
 {
     public partial class FrmPhotoSearchMove : Form
     {
-        private SemaphoreSlim semaphoreLock = new SemaphoreSlim(1, 1);
-
+        private SemaphoreSlim semaphoreLock = new(1, 1);
 
         private Label[] Lbl_Desc = new Label[25]; // Crea un array di n Label
         private Label[] Lbl_FileNameProc = new Label[25]; // Crea un array di n Label
@@ -59,8 +56,8 @@ namespace PhotoMoveYearMonthFolder
                     var tasks = new List<Task>();
 
                     int i = 0;
-                    foreach (var file in files)
-                    {                        
+                    _= Parallel.ForEach(files, (file) =>
+                    {
                         // Controlla se è un file immagine
                         if (IsValidFile(file))
                         {
@@ -74,12 +71,12 @@ namespace PhotoMoveYearMonthFolder
                                 }
                                 finally
                                 {
-                                    semaphore.Release();
+                                    _ = semaphore.Release();
                                 }
                             }));
                             i++;
                         }
-                    }
+                    });
                     await Task.WhenAll(tasks);
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
