@@ -70,8 +70,7 @@ namespace PhotoMoveYearMonthFolder
                     int i = 0;
                     /*_ = Parallel.ForEach(files, options, (file) =>*/
                     _ = Parallel.ForEach(files, (file) =>
-                    {
-                        _ = Interlocked.Increment(ref processedFiles);
+                    {                        
                         // Controlla se è un file immagine
                         if (IsValidFile(file))
                         {
@@ -155,7 +154,7 @@ namespace PhotoMoveYearMonthFolder
             return Path.Combine(directory, newFileName);
         }
 
-        private async Task ProcessFileAsync(string file, Label label, Label label1, long processedF)
+        private async Task ProcessFileAsync(string file, Label label, Label label1, long processedFiles)
         {
 
             // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
@@ -169,9 +168,7 @@ namespace PhotoMoveYearMonthFolder
                 else
                 {
                     label.Invoke((Action)(() => label.Text = file));
-                }
-
-                label1.Invoke((Action)(() => label1.Text = processedF.ToString()));
+                }                
 
                 // Ottieni i primi sei caratteri del nome file
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
@@ -206,6 +203,11 @@ namespace PhotoMoveYearMonthFolder
 
                     // Copia il file nella cartella mese
                     string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
+                    // Incremento contatore dei file processati
+                    _ = Interlocked.Increment(ref processedFiles);
+                    //Copio il file verificando se già essite
+                    //nel caso esista già rinomino il file che sto copiando
+                    //solo nella cartella destinazione.
                     if (File.Exists(destinazioneFile))
                     {
                         string newFileName = GenerateNewFileName(destinazioneFile);
@@ -215,6 +217,8 @@ namespace PhotoMoveYearMonthFolder
                     {
                         await CopyFileAsync(file, destinazioneFile);
                     }
+                    
+                    label1.Invoke((Action)(() => label1.Text = processedFiles.ToString()));
                 }
             }
             finally
