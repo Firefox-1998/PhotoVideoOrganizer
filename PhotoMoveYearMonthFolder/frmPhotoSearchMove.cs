@@ -15,6 +15,8 @@ namespace PhotoMoveYearMonthFolder
         private readonly object fileLock = new();
         private bool isProcessing = false;
 
+        private int processedFiles = 0;
+
         public FrmPhotoSearchMove()
         {
             InitializeComponent();
@@ -48,6 +50,7 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
+                processedFiles = 0;
 
                 /*
                 ParallelOptions options = new ParallelOptions
@@ -63,7 +66,6 @@ namespace PhotoMoveYearMonthFolder
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories);
                     var tasks = new List<Task>();
                     long numFiles = files.Count();
-                    long processedFiles = 0;
 
                     LblNumFiles.Text = "Num. file da processare: " + numFiles;                    
 
@@ -81,7 +83,7 @@ namespace PhotoMoveYearMonthFolder
                                 await semaphore.WaitAsync();
                                 try
                                 {
-                                    await ProcessFileAsync(file, label, label1, processedFiles);
+                                    await ProcessFileAsync(file, label, label1);
                                 }
                                 finally
                                 {
@@ -154,7 +156,7 @@ namespace PhotoMoveYearMonthFolder
             return Path.Combine(directory, newFileName);
         }
 
-        private async Task ProcessFileAsync(string file, Label label, Label label1, long processedFiles)
+        private async Task ProcessFileAsync(string file, Label label, Label label1)
         {
 
             // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
@@ -203,8 +205,9 @@ namespace PhotoMoveYearMonthFolder
 
                     // Copia il file nella cartella mese
                     string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
-                    // Incremento contatore dei file processati
-                    _ = Interlocked.Increment(ref processedFiles);
+
+                    processedFiles = Interlocked.Increment(ref processedFiles);
+
                     //Copio il file verificando se già essite
                     //nel caso esista già rinomino il file che sto copiando
                     //solo nella cartella destinazione.
@@ -217,8 +220,8 @@ namespace PhotoMoveYearMonthFolder
                     {
                         await CopyFileAsync(file, destinazioneFile);
                     }
-                    
-                    label1.Invoke((Action)(() => label1.Text = processedFiles.ToString()));
+                                        
+                    label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
                 }
             }
             finally
