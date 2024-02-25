@@ -36,7 +36,7 @@ namespace PhotoMoveYearMonthFolder
                     Location = new Point(150, (i * 20) + 127) // Posiziona le label verticalmente
                 };
                 this.Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
-            }            
+            }
         }
 
         private async void Btn_Start_Click(object sender, EventArgs e)
@@ -48,6 +48,11 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
 
+                ParallelOptions options = new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = 20
+                };
+
                 // Elabora tutte le immagini nella cartella e nelle sottocartelle
                 try
                 {
@@ -56,7 +61,7 @@ namespace PhotoMoveYearMonthFolder
                     var tasks = new List<Task>();
 
                     int i = 0;
-                    _= Parallel.ForEach(files, (file) =>
+                    _= Parallel.ForEach(files, options, (file) =>
                     {
                         // Controlla se è un file immagine
                         if (IsValidFile(file))
