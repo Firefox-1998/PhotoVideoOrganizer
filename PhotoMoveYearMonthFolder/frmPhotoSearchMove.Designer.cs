@@ -34,6 +34,8 @@
             Btn_DirDest = new Button();
             Btn_Start = new Button();
             Fbd_DirSel = new FolderBrowserDialog();
+            LblNumFiles = new Label();
+            LblFileProc = new Label();
             SuspendLayout();
             // 
             // Lbl_DirSearch
@@ -88,11 +90,31 @@
             // 
             Fbd_DirSel.SelectedPath = "C:\\";
             // 
+            // LblNumFiles
+            // 
+            LblNumFiles.AutoSize = true;
+            LblNumFiles.Location = new Point(12, 734);
+            LblNumFiles.Name = "LblNumFiles";
+            LblNumFiles.Size = new Size(12, 15);
+            LblNumFiles.TabIndex = 5;
+            LblNumFiles.Text = "-";
+            // 
+            // LblFileProc
+            // 
+            LblFileProc.AutoSize = true;
+            LblFileProc.Location = new Point(192, 737);
+            LblFileProc.Name = "LblFileProc";
+            LblFileProc.Size = new Size(12, 15);
+            LblFileProc.TabIndex = 6;
+            LblFileProc.Text = "-";
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(474, 761);
+            Controls.Add(LblFileProc);
+            Controls.Add(LblNumFiles);
             Controls.Add(Btn_Start);
             Controls.Add(Btn_DirDest);
             Controls.Add(Lbl_DirDestination);
@@ -103,6 +125,7 @@
             Text = "Photo Search, Move And Divide to Year - Month";
             FormClosing += FrmPhotoSearchMove_FormClosing;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -113,5 +136,7 @@
         private Button Btn_DirDest;
         private Button Btn_Start;
         private FolderBrowserDialog Fbd_DirSel;
+        private Label LblNumFiles;
+        private Label LblFileProc;
     }
 }

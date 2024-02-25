@@ -1,4 +1,5 @@
 using System.Globalization;
+using static System.Windows.Forms.Design.AxImporter;
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -48,10 +49,12 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
 
+                /*
                 ParallelOptions options = new ParallelOptions
                 {
                     MaxDegreeOfParallelism = 20
                 };
+                */
 
                 // Elabora tutte le immagini nella cartella e nelle sottocartelle
                 try
@@ -59,20 +62,27 @@ namespace PhotoMoveYearMonthFolder
                     var semaphore = new SemaphoreSlim(25); // Imposta il numero massimo di thread a 25
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories);
                     var tasks = new List<Task>();
+                    long numFiles = files.Count();
+                    long processedFiles = 0;
+
+                    LblNumFiles.Text = "Num. file da processare: " + numFiles;                    
 
                     int i = 0;
-                    _= Parallel.ForEach(files, options, (file) =>
+                    /*_ = Parallel.ForEach(files, options, (file) =>*/
+                    _ = Parallel.ForEach(files, (file) =>
                     {
+                        _ = Interlocked.Increment(ref processedFiles);
                         // Controlla se è un file immagine
                         if (IsValidFile(file))
                         {
                             var label = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
+                            var label1 = LblFileProc;
                             tasks.Add(Task.Run(async () =>
                             {
                                 await semaphore.WaitAsync();
                                 try
                                 {
-                                    await ProcessFileAsync(file, label);
+                                    await ProcessFileAsync(file, label, label1, processedFiles);
                                 }
                                 finally
                                 {
@@ -145,7 +155,7 @@ namespace PhotoMoveYearMonthFolder
             return Path.Combine(directory, newFileName);
         }
 
-        private async Task ProcessFileAsync(string file, Label label)
+        private async Task ProcessFileAsync(string file, Label label, Label label1, long processedF)
         {
 
             // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
@@ -160,6 +170,8 @@ namespace PhotoMoveYearMonthFolder
                 {
                     label.Invoke((Action)(() => label.Text = file));
                 }
+
+                label1.Invoke((Action)(() => label1.Text = processedF.ToString()));
 
                 // Ottieni i primi sei caratteri del nome file
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
@@ -209,7 +221,7 @@ namespace PhotoMoveYearMonthFolder
             {
                 // Rilascia il semaforo (equivalente a uscire da un blocco 'lock')
                 semaphoreLock.Release();
-            }            
+            }
         }
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
