@@ -1,4 +1,6 @@
+using ExifLib;
 using System.Globalization;
+
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -11,10 +13,9 @@ namespace PhotoMoveYearMonthFolder
 
         private string sSearchDir = "";
         private string sDestDir = "";
-        private readonly object fileLock = new();
-        private bool isProcessing = false;
+        private bool isProcessing;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
-        private int processedFiles = 0;
+        private int processedFiles = 0;        
 
         public FrmPhotoSearchMove()
         {
@@ -39,7 +40,7 @@ namespace PhotoMoveYearMonthFolder
                     Location = new Point(150, (i * 20) + 127) // Posiziona le label verticalmente
                 };
                 this.Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
-            }
+            }            
         }
 
         private async void Btn_Start_Click(object sender, EventArgs e)
@@ -190,7 +191,10 @@ namespace PhotoMoveYearMonthFolder
                                             provider: CultureInfo.InvariantCulture,
                                             DateTimeStyles.None,
                                             out _))
-                {
+                {                    
+                    // Leggi i dati EXIF
+                    ReadExifData(file);                    
+
                     // Crea la cartella anno se non esiste
                     string cartellaAnno = Path.Combine(sDestDir, anno);
                     if (!Directory.Exists(cartellaAnno))
@@ -241,16 +245,37 @@ namespace PhotoMoveYearMonthFolder
                 MessageBox.Show("Non è possibile chiudere la form durante l'elaborazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-        private async Task CopyFileAsync(string sourceFile, string destinationFile)
+
+        private static async Task CopyFileAsync(string sourceFile, string destinationFile)
         {
-            using FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
-            using var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
+            FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
+            var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
             await sourceStream.CopyToAsync(destinationStream);
         }
 
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
+            Btn_DirDest.Enabled = true;
+            Btn_DirSearch.Enabled = true;
+            Btn_Start.Enabled = true;
+            Btn_Cancel.Enabled = false;
+            isProcessing = false;
             _cancellationTokenSource.Cancel();
+        }
+
+        private void ReadExifData(string image)
+        {
+            try
+            {
+                var reader = new ExifLib.ExifReader(image);
+
+                reader.GetTagValue(ExifTags.DateTime, out DateTime date);
+                reader.GetTagValue(ExifTags.DateTimeOriginal, out DateTime dateoriginal);
+             }
+            catch (ExifLib.ExifLibException)
+            {
+                return;
+            }
         }
     }
 }
