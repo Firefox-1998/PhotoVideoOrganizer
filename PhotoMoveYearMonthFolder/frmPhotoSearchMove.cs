@@ -186,49 +186,52 @@ namespace PhotoMoveYearMonthFolder
                     mese = nomeFile.Substring(8, 2);
                 }
 
-                if (DateTime.TryParseExact(anno + mese,
+                if (!DateTime.TryParseExact(anno + mese,
                                             "yyyyMM",
                                             provider: CultureInfo.InvariantCulture,
                                             DateTimeStyles.None,
                                             out _))
-                {                    
+                {
                     // Leggi i dati EXIF
-                    ReadExifData(file);                    
-
-                    // Crea la cartella anno se non esiste
-                    string cartellaAnno = Path.Combine(sDestDir, anno);
-                    if (!Directory.Exists(cartellaAnno))
-                    {
-                        Directory.CreateDirectory(cartellaAnno);
-                    }
-
-                    // Crea la cartella mese se non esiste
-                    string cartellaMese = Path.Combine(cartellaAnno, mese);
-                    if (!Directory.Exists(cartellaMese))
-                    {
-                        Directory.CreateDirectory(cartellaMese);
-                    }
-
-                    // Copia il file nella cartella mese
-                    string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
-
-                    processedFiles = Interlocked.Increment(ref processedFiles);
-
-                    //Copio il file verificando se già essite
-                    //nel caso esista già rinomino il file che sto copiando
-                    //solo nella cartella destinazione.
-                    if (File.Exists(destinazioneFile))
-                    {
-                        string newFileName = GenerateNewFileName(destinazioneFile);
-                        await CopyFileAsync(file, newFileName);
-                    }
-                    else
-                    {
-                        await CopyFileAsync(file, destinazioneFile);
-                    }
-
-                    label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
+                    ReadExifData(file, out DateTime parsedDate);
+                    anno = nomeFile[..4];
+                    mese = nomeFile.Substring(4, 2);
                 }
+
+                // Crea la cartella anno se non esiste
+                string cartellaAnno = Path.Combine(sDestDir, anno);
+                if (!Directory.Exists(cartellaAnno))
+                {
+                    Directory.CreateDirectory(cartellaAnno);
+                }
+
+                // Crea la cartella mese se non esiste
+                string cartellaMese = Path.Combine(cartellaAnno, mese);
+                if (!Directory.Exists(cartellaMese))
+                {
+                    Directory.CreateDirectory(cartellaMese);
+                }
+
+                // Copia il file nella cartella mese
+                // verificando se già esiste e
+                // nel caso esista già rinomino il file
+                // nella cartella destinazione.
+                // Il file di origine resta invariato
+                string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
+                processedFiles = Interlocked.Increment(ref processedFiles);
+
+                if (File.Exists(destinazioneFile))
+                {
+                    string newFileName = GenerateNewFileName(destinazioneFile);
+                    await CopyFileAsync(file, newFileName);
+                }
+                else
+                {
+                    await CopyFileAsync(file, destinazioneFile);
+                }
+
+                label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
+                
             }
             finally
             {
@@ -263,17 +266,36 @@ namespace PhotoMoveYearMonthFolder
             _cancellationTokenSource.Cancel();
         }
 
-        private void ReadExifData(string image)
+        private static void ReadExifData(string image, out DateTime parsedDate)
         {
             try
             {
-                var reader = new ExifLib.ExifReader(image);
+                var reader = new ExifReader(image);
 
                 reader.GetTagValue(ExifTags.DateTime, out DateTime date);
                 reader.GetTagValue(ExifTags.DateTimeOriginal, out DateTime dateoriginal);
+                bool isDate = DateTime.TryParse(date.ToString(), out _);
+
+                if (isDate)
+                {
+                    parsedDate = date;
+                }
+                else
+                {
+                    isDate = DateTime.TryParse(dateoriginal.ToString(), out _);
+                    if (isDate)
+                    {
+                        parsedDate = dateoriginal;
+                    }
+                    else 
+                    {
+                        parsedDate = DateTime.ParseExact("19700101", "yyyyMMdd", CultureInfo.InvariantCulture);
+                    }
+                }                    
              }
-            catch (ExifLib.ExifLibException)
-            {
+            catch (ExifLibException)
+            {                
+                parsedDate = DateTime.ParseExact("19700101", "yyyyMMdd", CultureInfo.InvariantCulture);
                 return;
             }
         }
