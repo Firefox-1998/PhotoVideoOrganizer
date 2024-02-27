@@ -194,8 +194,8 @@ namespace PhotoMoveYearMonthFolder
                 {
                     // Leggi i dati EXIF
                     ReadExifData(file, out DateTime parsedDate);
-                    anno = nomeFile[..4];
-                    mese = nomeFile.Substring(4, 2);
+                    anno = parsedDate.ToString()[..4];
+                    mese = parsedDate.ToString().Substring(4, 2);
                 }
 
                 // Crea la cartella anno se non esiste
