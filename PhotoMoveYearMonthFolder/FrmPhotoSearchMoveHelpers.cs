@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 
-internal static class FrmPhotoSearchMoveHelpers
+internal static class frmPhotoSearchMoveHelpers
 {
 
     public static async Task CopyFileAsync(string sourceFile, string destinationFile)
@@ -49,7 +49,7 @@ internal static class FrmPhotoSearchMoveHelpers
 
     private static byte[] GetFileHash(SHA256 sha256, string path)
     {
-        using FileStream stream = File.OpenRead(path);
+        FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         return sha256.ComputeHash(stream);
     }
 
