@@ -1,6 +1,4 @@
-using ExifLib;
 using System.Globalization;
-using System.Security.Cryptography;
 
 
 namespace PhotoMoveYearMonthFolder
@@ -28,7 +26,7 @@ namespace PhotoMoveYearMonthFolder
                 {
                     Name = "Lbl_Desc" + i,
                     AutoSize = true,
-                    Text = "File processed thread " + (i + 1).ToString("D2") + ":",
+                    Text = "File processed " + (i + 1).ToString("D2") + ":",
                     Location = new Point(12, (i * 20) + 127) // Posiziona le label verticalmente
                 };
                 this.Controls.Add(Lbl_Desc[i]); // Aggiungi la label alla form
@@ -38,7 +36,7 @@ namespace PhotoMoveYearMonthFolder
                     Name = "Lbl_FileNameProc" + i,
                     AutoSize = true,
                     Text = "-",
-                    Location = new Point(150, (i * 20) + 127) // Posiziona le label verticalmente
+                    Location = new Point(110, (i * 20) + 127) // Posiziona le label verticalmente
                 };
                 this.Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
             }            
@@ -65,7 +63,7 @@ namespace PhotoMoveYearMonthFolder
                 // Elabora tutte le immagini nella cartella e nelle sottocartelle
                 try
                 {
-                    var semaphore = new SemaphoreSlim(15); // Imposta il numero massimo di thread a 15
+                    var semaphore = new SemaphoreSlim(10); // Imposta il numero massimo di thread a 10
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories);
                     var tasks = new List<Task>();
                     long numFiles = files.Count();
@@ -77,7 +75,7 @@ namespace PhotoMoveYearMonthFolder
                     _ = Parallel.ForEach(files, (file) =>
                     {
                         // Controlla se è un file immagine
-                        if (IsValidFile(file))
+                        if (FrmPhotoSearchMoveHelpers.IsValidFile(file))
                         {
                             var label = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
                             var label1 = LblFileProc;
@@ -130,46 +128,15 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private static bool IsValidFile(string file)
-        {
-            // Ottieni l'estensione del file
-            string extension = Path.GetExtension(file).ToLower();
-
-            // Elenco di estensioni di file immagine
-            string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4"];
-
-            // Restituisce true se l'estensione è presente nell'elenco
-            return validExtensions.Contains(extension);
-        }
-
-        private static string GenerateNewFileName(string filePath)
-        {
-            string directory = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath));
-            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
-            string fileExtension = Path.GetExtension(filePath);
-
-            int counter = 1;
-            string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
-
-            while (File.Exists(Path.Combine(directory, newFileName)))
-            {
-                counter++;
-                newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
-            }
-
-            return Path.Combine(directory, newFileName);
-        }
-
         private async Task ProcessFileAsync(string file, Label label, Label label1)
         {
-
             // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
             await semaphoreLock.WaitAsync();
             try
             {
-                if (file.Length > 30)
+                if (file.Length > 40)
                 {
-                    label.Invoke((Action)(() => label.Text = file.Substring(file.Length - 30, 30)));
+                    label.Invoke((Action)(() => label.Text = file.Substring(file.Length - 40, 40)));
                 }
                 else
                 {
@@ -193,10 +160,21 @@ namespace PhotoMoveYearMonthFolder
                                             DateTimeStyles.None,
                                             out _))
                 {
-                    // Leggi i dati EXIF
-                    ReadExifData(file, out DateTime parsedDate);                    
+                    FrmPhotoSearchMoveHelpers.
+                                        // Leggi i dati EXIF
+                                        ReadExifData(file, out DateTime parsedDate);                    
                     anno = parsedDate.ToString("yyyyMMdd")[..4];
                     mese = parsedDate.ToString("yyyyMMdd").Substring(4, 2);
+                }
+
+                if (short.Parse(anno) < 1970)
+                {
+                    anno = "1970";
+                }
+
+                if (short.Parse(mese) < 1)
+                {
+                    mese = "01";
                 }
 
                 // Crea la cartella anno se non esiste
@@ -221,24 +199,38 @@ namespace PhotoMoveYearMonthFolder
                 string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
                 processedFiles = Interlocked.Increment(ref processedFiles);
 
+
+
                 if (File.Exists(destinazioneFile))
                 {
                     // Se il file che devo copiare è
                     // identico al file che già esiste (calcolo HASH dei file)
                     // NON eseguo la copia.
-                    if (!FilesAreIdentical(file, destinazioneFile))
+                    bool areFilesIdentical = false;
+                    while (!areFilesIdentical)
                     {
-                        string newFileName = GenerateNewFileName(destinazioneFile);
-                        await CopyFileAsync(file, newFileName);
+                        try
+                        {
+                            areFilesIdentical = FrmPhotoSearchMoveHelpers.FilesAreIdentical(file, destinazioneFile);
+                        }
+                        catch (IOException)
+                        {
+                            // Aspetta un po' prima di riprovare
+                            await Task.Delay(1000);
+                        }
+                    }
+                    if (!areFilesIdentical)
+                    {
+                        string newFileName = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, newFileName);
                     }
                 }
                 else
                 {
-                    await CopyFileAsync(file, destinazioneFile);
+                    await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
                 }
 
                 label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
-                
             }
             finally
             {
@@ -256,13 +248,6 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private static async Task CopyFileAsync(string sourceFile, string destinationFile)
-        {
-            FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
-            var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
-            await sourceStream.CopyToAsync(destinationStream);
-        }
-
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
             Btn_DirDest.Enabled = true;
@@ -271,82 +256,6 @@ namespace PhotoMoveYearMonthFolder
             Btn_Cancel.Enabled = false;
             isProcessing = false;
             _cancellationTokenSource.Cancel();
-        }
-
-        private static void ReadExifData(string image, out DateTime parsedDate)
-        {
-            try
-            {
-                var reader = new ExifReader(image);
-
-                reader.GetTagValue(ExifTags.DateTime, out DateTime date);                
-                bool isDate = DateTime.TryParse(date.ToString(), provider: CultureInfo.InvariantCulture,
-                                            DateTimeStyles.None,
-                                            out _);
-
-                if (isDate)
-                {
-                    parsedDate = DateTime.ParseExact(date.ToString(),
-                                                         "yyyyMMdd",
-                                                         provider: CultureInfo.InvariantCulture,
-                                                         style: DateTimeStyles.None);
-                }
-                else
-                {
-                    reader.GetTagValue(ExifTags.DateTimeOriginal, out DateTime dateoriginal);
-                    isDate = DateTime.TryParse(dateoriginal.ToString(), provider: CultureInfo.InvariantCulture,
-                                            DateTimeStyles.None,
-                                            out _);
-                    if (isDate)
-                    {
-                        parsedDate = DateTime.ParseExact(dateoriginal.ToString(),
-                                                         "yyyyMMdd",
-                                                         provider: CultureInfo.InvariantCulture,
-                                                         style: DateTimeStyles.None);
-
-                    }
-                    else 
-                    {
-                        parsedDate = DateTime.ParseExact("19700101",
-                                                         "yyyyMMdd",
-                                                         provider: CultureInfo.InvariantCulture,
-                                                         style: DateTimeStyles.None);
-                    }
-                }                    
-             }
-            catch (ExifLibException)
-            {
-                parsedDate = DateTime.ParseExact("19700101",
-                                                 "yyyyMMdd",
-                                                 provider: CultureInfo.InvariantCulture,
-                                                 style: DateTimeStyles.None);
-                return;
-            }
-        }
-
-        private bool FilesAreIdentical(string path1, string path2)
-        {
-            using SHA256 sha256 = SHA256.Create();
-            byte[] hash1 = GetFileHash(sha256, path1);
-            byte[] hash2 = GetFileHash(sha256, path2);
-
-            for (int i = 0; i < hash1.Length; i++)
-            {
-                if (hash1[i] != hash2[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private byte[] GetFileHash(SHA256 sha256, string path)
-        {
-            using (FileStream stream = File.OpenRead(path))
-            {
-                return sha256.ComputeHash(stream);
-            }
         }
     }
 }
