@@ -1,9 +1,12 @@
 ﻿using ExifLib;
 using PhotoMoveYearMonthFolder;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
-internal static class frmPhotoSearchMoveHelpers
+internal static partial class FrmPhotoSearchMoveHelpers
 {
+    [GeneratedRegex(@"^\d{6}")]
+    private static partial Regex MyRegex();
 
     public static async Task CopyFileAsync(string sourceFile, string destinationFile)
     {
@@ -27,6 +30,13 @@ internal static class frmPhotoSearchMoveHelpers
         }
 
         return true;
+    }
+
+    public static string ComputeHash(string file)
+    {
+        using SHA256 sha256 = SHA256.Create();
+        byte[] hash1 = GetFileHash(sha256, file);
+        return BitConverter.ToString(value: hash1).Replace("-", string.Empty);        
     }
 
     public static string GenerateNewFileName(string filePath)
@@ -65,63 +75,18 @@ internal static class frmPhotoSearchMoveHelpers
         return validExtensions.Contains(extension);
     }
 
-    /*
-    public static void ReadExifData(string image, out DateTime parsedDate)
-    {
-        try
-        {
-            var reader = new ExifReader(image);
-
-            reader.GetTagValue(ExifTags.DateTime, out DateTime date);
-            bool isDate = DateTime.TryParse(date.ToString(), provider: CultureInfo.InvariantCulture,
-                                        DateTimeStyles.None,
-                                        out _);
-
-            if (isDate)
-            {
-                parsedDate = DateTime.ParseExact(date.ToString(),
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-            }
-            else
-            {
-                reader.GetTagValue(ExifTags.DateTimeOriginal, out DateTime dateoriginal);
-                isDate = DateTime.TryParse(dateoriginal.ToString(), provider: CultureInfo.InvariantCulture,
-                                        DateTimeStyles.None,
-                                        out _);
-                if (isDate)
-                {
-                    parsedDate = DateTime.ParseExact(dateoriginal.ToString(),
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-
-                }
-                else
-                {
-                    parsedDate = DateTime.ParseExact("19700101",
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-                }
-            }
-        }
-        catch (ExifLibException)
-        {
-            parsedDate = DateTime.ParseExact("19700101",
-                                             "yyyyMMdd",
-                                             provider: CultureInfo.InvariantCulture,
-                                             style: DateTimeStyles.None);
-            return;
-        }        
-    }
-    */
-
     public static string ReadExifData(string imagePath)
-    {
-        string defaultDate = "19700101";
+    {        
+        string fileName = Path.GetFileName(imagePath);        
 
+        // Prova a estrarre la data dal nome del file
+        if (MyRegex().IsMatch(fileName))
+        {
+            // Prendo i primi sei caratteri del nome file per determinare la data di scatto dell'immagine
+            return fileName[..6];
+        }
+
+        string defaultDate = "19700101";
         try
         {
             using ExifReader reader = new(imagePath);

@@ -144,66 +144,32 @@ namespace PhotoMoveYearMonthFolder
 
         private async Task ProcessFileAsync(string file, Label lblFileNameProc, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
-            // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
             await semaphoreLock.WaitAsync();
             try
             {
-                if (file.Length > 40)
-                {
-                    lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file.Substring(file.Length - 40, 40)));
-                }
-                else
-                {
-                    lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file));
-                }
+                lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file.Length > 40 ? file[^40..] : file));
 
-                // Imposto il nome del file da processare
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
-                string anno;
-                string mese;
+                string anno, mese;
 
-                // Se i primi quattro caratteri sono "IMG-" o "VID-"
-                // allora prendo i successivi sei caratteri
-                // ed imposto anno e mese
-                if (nomeFile[..4].Equals("IMG-", StringComparison.OrdinalIgnoreCase) || nomeFile[..4].Equals("VID-", StringComparison.OrdinalIgnoreCase))
+                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) || nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase))
                 {
-                    anno = nomeFile.Substring(4, 4);
-                    mese = nomeFile.Substring(8, 2);
+                    anno = nomeFile[4..8];
+                    mese = nomeFile[8..10];
                 }
                 else
                 {
-                    // Leggi i dati EXIF
-                    // Di default anno e mese verrrano impostati a
-                    // anno = "1970"
-                    // mese = "01"
-                    // Verranno utilizzati questi dati
-                    // nel caso in cui il nome del file non contiene
-                    // anno e mese o data scatto e
-                    // data original non siano presenti
                     string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
                     anno = parsedDate[..4];
-                    mese = parsedDate.Substring(4, 2);
+                    mese = parsedDate[4..6];
                 }
 
-                // Crea la cartella anno se non esiste
                 string cartellaAnno = Path.Combine(sDestDir, anno);
-                if (!Directory.Exists(cartellaAnno))
-                {
-                    Directory.CreateDirectory(cartellaAnno);
-                }
+                Directory.CreateDirectory(cartellaAnno);
 
-                // Crea la cartella mese se non esiste
                 string cartellaMese = Path.Combine(cartellaAnno, mese);
-                if (!Directory.Exists(cartellaMese))
-                {
-                    Directory.CreateDirectory(cartellaMese);
-                }
+                Directory.CreateDirectory(cartellaMese);
 
-                // Copia il file nella cartella mese
-                // verificando se già esiste e
-                // nel caso esista già rinomino il file
-                // nella cartella destinazione.
-                // Il file di origine resta invariato
                 string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
                 string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
@@ -220,49 +186,6 @@ namespace PhotoMoveYearMonthFolder
                 {
                     Logger.Log($"Saltato {file} {destinazioneFile}");
                 }
-
-                /*
-                if (File.Exists(destinazioneFile))
-                {
-                    // Se il file che devo copiare è
-                    // identico al file che già esiste (calcolo HASH dei file)
-                    // NON eseguo la copia.                    
-                    int tentativi = 0;
-                    while (tentativi < 5)
-                    {
-                        try
-                        {
-                            areFilesIdentical = FrmPhotoSearchMoveHelpers.FilesAreIdentical(file, destinazioneFile);
-                            break;  // Uscire dal ciclo se FilesAreIdentical non lancia un'eccezione
-                        }
-                        catch (IOException)
-                        {
-                            Logger.Log("Eccezione file in uso " + file + " " + destinazioneFile + " ");
-                            // Aspetta un po' prima di riprovare
-                            await Task.Delay(1000);
-                            tentativi++;
-                        }
-                    }
-
-                    if (!areFilesIdentical)
-                    {                        
-                        string newFileName = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, newFileName);
-                        Logger.Log("Copiato " + file + " " + newFileName + " ");
-                        fileHashes.Add(fileHash);
-                    }
-                    else
-                    {                        
-                        Logger.Log("Saltato " + file + " " + destinazioneFile + " ");
-                    }
-                }
-                else
-                {                    
-                    await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
-                    Logger.Log("Copiato " + file + " " + destinazioneFile + " ");
-                    fileHashes.Add(fileHash);
-                }
-                */
             }
             catch (FormatException)
             {
@@ -271,13 +194,13 @@ namespace PhotoMoveYearMonthFolder
             finally
             {
                 processedFiles = Interlocked.Increment(ref processedFiles);
-                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = "Num. file processati: " + processedFiles.ToString()));
+                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = $"Num. file processati: {processedFiles}"));
                 pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
 
-                // Rilascia il semaforo (equivalente a uscire da un blocco 'lock')
                 semaphoreLock.Release();
             }
         }
+
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
         {
