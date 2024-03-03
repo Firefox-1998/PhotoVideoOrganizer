@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Globalization;
-
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -200,7 +198,6 @@ namespace PhotoMoveYearMonthFolder
                 semaphoreLock.Release();
             }
         }
-
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
         {
