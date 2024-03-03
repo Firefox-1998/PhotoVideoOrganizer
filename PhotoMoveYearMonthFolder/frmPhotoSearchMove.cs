@@ -14,8 +14,8 @@ namespace PhotoMoveYearMonthFolder
         private bool isProcessing;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private int processedFiles = 0;
-        private readonly ConcurrentBag<Task> tasks = []; // Usa ConcurrentBag invece di List o HashSet
-        private HashSet<string> fileHashes = new();
+        private readonly ConcurrentBag<Task> tasks = new(); // Usa ConcurrentBag invece di List o HashSet
+        private ConcurrentDictionary<string, byte> fileHashes = new();
 
         public FrmPhotoSearchMove()
         {
@@ -153,14 +153,36 @@ namespace PhotoMoveYearMonthFolder
                 string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
                 string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
-                bool areFilesIdentical = fileExists && fileHashes.Contains(fileHash);
+                bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
 
                 if (!areFilesIdentical)
                 {
-                    string destinationFile = fileExists ? FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile) : destinazioneFile;
-                    await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
-                    Logger.Log($"Copiato {file} {destinationFile}");
-                    fileHashes.Add(fileHash);
+                    if (fileExists)
+                    {
+                        // Calcola l'hash del file esistente
+                        string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+
+                        if (fileHash != existingFileHash)
+                        {
+                            // I file sono diversi, quindi copia il file con un nuovo nome
+                            string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
+                            Logger.Log($"Copiato {file} {destinationFile}");
+                            fileHashes.TryAdd(fileHash, 0);
+                        }
+                        else
+                        {
+                            // I file sono identici, quindi salta la copia del file
+                            Logger.Log($"Saltato {file} {destinazioneFile}");
+                        }
+                    }
+                    else
+                    {
+                        // Il file non esiste, quindi copia il file
+                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
+                        Logger.Log($"Copiato {file} {destinazioneFile}");
+                        fileHashes.TryAdd(fileHash, 0);
+                    }
                 }
                 else
                 {
