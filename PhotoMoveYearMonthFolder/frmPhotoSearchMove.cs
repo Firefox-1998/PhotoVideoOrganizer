@@ -15,7 +15,7 @@ namespace PhotoMoveYearMonthFolder
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private int processedFiles = 0;
         private readonly ConcurrentBag<Task> tasks = []; // Usa ConcurrentBag invece di List o HashSet
-        private HashSet<string> fileHashes;
+        private HashSet<string> fileHashes = new();
 
         public FrmPhotoSearchMove()
         {
@@ -45,7 +45,7 @@ namespace PhotoMoveYearMonthFolder
 
         private async void Btn_Start_Click(object sender, EventArgs e)
         {
-            fileHashes = new HashSet<string>();
+            fileHashes = new();
             isProcessing = true;
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
