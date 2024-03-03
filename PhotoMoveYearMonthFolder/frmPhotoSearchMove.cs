@@ -145,17 +145,27 @@ namespace PhotoMoveYearMonthFolder
                     label.Invoke((Action)(() => label.Text = file));
                 }
 
-                // Ottieni i primi sei caratteri del nome file
+                // Imposto il nome del file da processare
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
+
+                // Prendo i primi sei caratteri del nome file per determinare la data di scatto dell'immagine
+                // I primi quattro caratteri sono l'anno
+                // I successivi due caratteri il mese
                 string anno = nomeFile[..4];
                 string mese = nomeFile.Substring(4, 2);
 
+                // Se i primi quattro caratteri sono "IMG-" o "VID-"
+                // allora prendo i successivi sei caratteri
+                // ed imposto anno e mese
                 if (anno.Equals("IMG-", StringComparison.OrdinalIgnoreCase) || anno.Equals("VID-", StringComparison.OrdinalIgnoreCase))
                 {
                     anno = nomeFile.Substring(4, 4);
                     mese = nomeFile.Substring(8, 2);
                 }
 
+                // Verifico se anno e mese sono una data e ne caso non lo siano
+                // tento di estrarre i dati Exif dall'immagine
+                // per impostare anno e mese
                 if (!DateTime.TryParseExact(anno + mese,
                                             "yyyyMM",
                                             provider: CultureInfo.InvariantCulture,
@@ -163,19 +173,15 @@ namespace PhotoMoveYearMonthFolder
                                             out _))
                 {
                     // Leggi i dati EXIF
-                    frmPhotoSearchMoveHelpers.ReadExifData(file, out DateTime parsedDate);                    
-                    anno = parsedDate.ToString("yyyyMMdd")[..4];
-                    mese = parsedDate.ToString("yyyyMMdd").Substring(4, 2);
-                }
-
-                if (short.Parse(anno) < 1970)
-                {
-                    anno = "1970";
-                }
-
-                if (short.Parse(mese) < 1)
-                {
-                    mese = "01";
+                    // Di default anno e mese verrrano impostati a
+                    // anno = "1970"
+                    // mese = "01"
+                    // Verranno utilizzati questi dati
+                    // nel caso in cui data scatto
+                    // e data original non siano presenti
+                    string parsedDate =frmPhotoSearchMoveHelpers.ReadExifData(file);                    
+                    anno = parsedDate[..4];
+                    mese = parsedDate.Substring(4, 2);
                 }
 
                 // Crea la cartella anno se non esiste
