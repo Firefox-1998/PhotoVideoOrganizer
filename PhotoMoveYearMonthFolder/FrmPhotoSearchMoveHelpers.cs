@@ -1,5 +1,5 @@
 ﻿using ExifLib;
-using System.Globalization;
+using PhotoMoveYearMonthFolder;
 using System.Security.Cryptography;
 
 internal static class frmPhotoSearchMoveHelpers
@@ -65,54 +65,24 @@ internal static class frmPhotoSearchMoveHelpers
         return validExtensions.Contains(extension);
     }
 
-    public static void ReadExifData(string image, out DateTime parsedDate)
+    public static string ReadExifData(string imagePath)
     {
+        string defaultDate = "19700101";
+
         try
         {
-            var reader = new ExifReader(image);
+            using ExifReader reader = new(imagePath);
 
-            reader.GetTagValue(ExifTags.DateTime, out DateTime date);
-            bool isDate = DateTime.TryParse(date.ToString(), provider: CultureInfo.InvariantCulture,
-                                        DateTimeStyles.None,
-                                        out _);
-
-            if (isDate)
+            if (reader.GetTagValue(ExifTags.DateTimeDigitized, out DateTime datePictureTaken) ||
+                reader.GetTagValue(ExifTags.DateTimeOriginal, out datePictureTaken))
             {
-                parsedDate = DateTime.ParseExact(date.ToString(),
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-            }
-            else
-            {
-                reader.GetTagValue(ExifTags.DateTimeOriginal, out DateTime dateoriginal);
-                isDate = DateTime.TryParse(dateoriginal.ToString(), provider: CultureInfo.InvariantCulture,
-                                        DateTimeStyles.None,
-                                        out _);
-                if (isDate)
-                {
-                    parsedDate = DateTime.ParseExact(dateoriginal.ToString(),
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-
-                }
-                else
-                {
-                    parsedDate = DateTime.ParseExact("19700101",
-                                                     "yyyyMMdd",
-                                                     provider: CultureInfo.InvariantCulture,
-                                                     style: DateTimeStyles.None);
-                }
+                return datePictureTaken.ToString("yyyyMMdd");
             }
         }
-        catch (ExifLibException)
+        catch (Exception ex)
         {
-            parsedDate = DateTime.ParseExact("19700101",
-                                             "yyyyMMdd",
-                                             provider: CultureInfo.InvariantCulture,
-                                             style: DateTimeStyles.None);
-            return;
+            Logger.Log("Eccezione ReadExifData " + ex.Message + " " + imagePath);
         }
+        return defaultDate;
     }
 }

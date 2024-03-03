@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 
 
@@ -15,7 +16,7 @@ namespace PhotoMoveYearMonthFolder
         private bool isProcessing;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private int processedFiles = 0;
-        private List<Task> tasks = new();
+        private readonly ConcurrentBag<Task> tasks = []; // Usa ConcurrentBag invece di List o HashSet
 
         public FrmPhotoSearchMove()
         {
@@ -30,7 +31,7 @@ namespace PhotoMoveYearMonthFolder
                     Text = "File processed " + (i + 1).ToString("D2") + ":",
                     Location = new Point(12, (i * 20) + 127) // Posiziona le label verticalmente
                 };
-                this.Controls.Add(Lbl_Desc[i]); // Aggiungi la label alla form
+                Controls.Add(Lbl_Desc[i]); // Aggiungi la label alla form
 
                 Lbl_FileNameProc[i] = new Label
                 {
@@ -39,7 +40,7 @@ namespace PhotoMoveYearMonthFolder
                     Text = "-",
                     Location = new Point(110, (i * 20) + 127) // Posiziona le label verticalmente
                 };
-                this.Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
+                Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
             }            
         }
 
@@ -66,9 +67,10 @@ namespace PhotoMoveYearMonthFolder
                 {
                     var semaphore = new SemaphoreSlim(10); // Imposta il numero massimo di thread a 10
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories);                    
-                    long numFiles = files.Count();
+                    int numFiles = files.Count();
 
                     LblNumFiles.Text = "Num. file da processare: " + numFiles;
+                    pbProcessFiles.Maximum = numFiles;
 
                     int i = 0;
                     /*_ = Parallel.ForEach(files, options, (file) =>*/
@@ -77,14 +79,14 @@ namespace PhotoMoveYearMonthFolder
                         // Controlla se è un file immagine
                         if (frmPhotoSearchMoveHelpers.IsValidFile(file))
                         {
-                            var label = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
-                            var label1 = LblFileProc;
+                            var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
+                            var lblFileNumProc = LblFileProc;
                             var task = Task.Run(async () =>
                             {
                                 await semaphore.WaitAsync(_cancellationTokenSource.Token);
                                 try
                                 {
-                                    await ProcessFileAsync(file, label, label1);
+                                    await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc);
                                 }
                                 finally
                                 {
@@ -92,7 +94,10 @@ namespace PhotoMoveYearMonthFolder
                                 }
                             });
                             tasks.Add(task);
-                            task.ContinueWith(t => tasks.Remove(t));  // Rimuove il task dalla lista quando è completato
+                            task.ContinueWith(t =>
+                            {
+                                while (!tasks.TryTake(out _)) { } // Rimuove il task dalla lista quando è completato
+                            });
                             i++;
                         }
                     });
@@ -130,7 +135,7 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private async Task ProcessFileAsync(string file, Label label, Label label1)
+        private async Task ProcessFileAsync(string file, Label lblFileNameProc, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
             // Acquisisci il semaforo (equivalente a entrare in un blocco 'lock')
             await semaphoreLock.WaitAsync();
@@ -138,11 +143,11 @@ namespace PhotoMoveYearMonthFolder
             {
                 if (file.Length > 40)
                 {
-                    label.Invoke((Action)(() => label.Text = file.Substring(file.Length - 40, 40)));
+                    lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file.Substring(file.Length - 40, 40)));
                 }
                 else
                 {
-                    label.Invoke((Action)(() => label.Text = file));
+                    lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file));
                 }
 
                 // Imposto il nome del file da processare
@@ -245,9 +250,11 @@ namespace PhotoMoveYearMonthFolder
                     processedFiles = Interlocked.Increment(ref processedFiles);
                     await frmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
                     Logger.Log("Copiato " + file + " " + destinazioneFile + " ");
-                }                
-                
-                label1.Invoke((Action)(() => label1.Text = "Num. file processati: " + processedFiles.ToString()));
+                }
+
+                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = "Num. file processati: " + processedFiles.ToString()));
+                pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
+
             }
             catch (FormatException)
             {
@@ -262,7 +269,7 @@ namespace PhotoMoveYearMonthFolder
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (tasks.Any(t => !t.IsCompleted))  // Controlla se ci sono task non completati
+            if (tasks.Any(t => !t.IsCompleted) && isProcessing) // Controlla se ci sono task non completati e is processing è true
             {
                 e.Cancel = true;
                 MessageBox.Show("Non è possibile chiudere la form durante l'elaborazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);

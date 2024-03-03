@@ -37,6 +37,7 @@
             LblNumFiles = new Label();
             LblFileProc = new Label();
             Btn_Cancel = new Button();
+            pbProcessFiles = new ProgressBar();
             SuspendLayout();
             // 
             // Lbl_DirSearch
@@ -120,11 +121,21 @@
             Btn_Cancel.UseVisualStyleBackColor = true;
             Btn_Cancel.Click += Btn_Cancel_Click;
             // 
+            // pbProcessFiles
+            // 
+            pbProcessFiles.Location = new Point(10, 762);
+            pbProcessFiles.Name = "pbProcessFiles";
+            pbProcessFiles.Size = new Size(452, 23);
+            pbProcessFiles.Step = 1;
+            pbProcessFiles.Style = ProgressBarStyle.Continuous;
+            pbProcessFiles.TabIndex = 8;
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 761);
+            ClientSize = new Size(474, 792);
+            Controls.Add(pbProcessFiles);
             Controls.Add(Btn_Cancel);
             Controls.Add(LblFileProc);
             Controls.Add(LblNumFiles);
@@ -152,5 +163,6 @@
         private Label LblNumFiles;
         private Label LblFileProc;
         private Button Btn_Cancel;
+        private ProgressBar pbProcessFiles;
     }
 }
