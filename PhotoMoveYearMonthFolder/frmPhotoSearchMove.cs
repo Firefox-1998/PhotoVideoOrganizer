@@ -6,7 +6,7 @@ namespace PhotoMoveYearMonthFolder
 {
     public partial class FrmPhotoSearchMove : Form
     {
-        private SemaphoreSlim semaphoreLock = new(1, 1);
+        private readonly SemaphoreSlim semaphoreLock = new(1, 1);
 
         private Label[] Lbl_Desc = new Label[25]; // Crea un array di n Label
         private Label[] Lbl_FileNameProc = new Label[25]; // Crea un array di n Label
@@ -17,6 +17,7 @@ namespace PhotoMoveYearMonthFolder
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private int processedFiles = 0;
         private readonly ConcurrentBag<Task> tasks = []; // Usa ConcurrentBag invece di List o HashSet
+        private HashSet<string> fileHashes;
 
         public FrmPhotoSearchMove()
         {
@@ -46,6 +47,7 @@ namespace PhotoMoveYearMonthFolder
 
         private async void Btn_Start_Click(object sender, EventArgs e)
         {
+            fileHashes = [];
             isProcessing = true;
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
@@ -77,16 +79,17 @@ namespace PhotoMoveYearMonthFolder
                     _ = Parallel.ForEach(files, (file) =>
                     {
                         // Controlla se è un file immagine
-                        if (frmPhotoSearchMoveHelpers.IsValidFile(file))
+                        if (FrmPhotoSearchMoveHelpers.IsValidFile(file))
                         {
                             var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
                             var lblFileNumProc = LblFileProc;
+                            var progressbarNumFileProc = pbProcessFiles;
                             var task = Task.Run(async () =>
                             {
                                 await semaphore.WaitAsync(_cancellationTokenSource.Token);
                                 try
                                 {
-                                    await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc);
+                                    await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc, progressbarNumFileProc);
                                 }
                                 finally
                                 {
@@ -107,6 +110,10 @@ namespace PhotoMoveYearMonthFolder
                 catch (Exception ex)
                 {
                     MessageBox.Show("Si è verificato un errore: " + ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally 
+                {
+                    _cancellationTokenSource.Dispose();
                 }
 
                 Btn_DirDest.Enabled = true;
@@ -152,39 +159,28 @@ namespace PhotoMoveYearMonthFolder
 
                 // Imposto il nome del file da processare
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
-
-                // Prendo i primi sei caratteri del nome file per determinare la data di scatto dell'immagine
-                // I primi quattro caratteri sono l'anno
-                // I successivi due caratteri il mese
-                string anno = nomeFile[..4];
-                string mese = nomeFile.Substring(4, 2);
+                string anno;
+                string mese;
 
                 // Se i primi quattro caratteri sono "IMG-" o "VID-"
                 // allora prendo i successivi sei caratteri
                 // ed imposto anno e mese
-                if (anno.Equals("IMG-", StringComparison.OrdinalIgnoreCase) || anno.Equals("VID-", StringComparison.OrdinalIgnoreCase))
+                if (nomeFile[..4].Equals("IMG-", StringComparison.OrdinalIgnoreCase) || nomeFile[..4].Equals("VID-", StringComparison.OrdinalIgnoreCase))
                 {
                     anno = nomeFile.Substring(4, 4);
                     mese = nomeFile.Substring(8, 2);
                 }
-
-                // Verifico se anno e mese sono una data e ne caso non lo siano
-                // tento di estrarre i dati Exif dall'immagine
-                // per impostare anno e mese
-                if (!DateTime.TryParseExact(anno + mese,
-                                            "yyyyMM",
-                                            provider: CultureInfo.InvariantCulture,
-                                            DateTimeStyles.None,
-                                            out _))
+                else
                 {
                     // Leggi i dati EXIF
                     // Di default anno e mese verrrano impostati a
                     // anno = "1970"
                     // mese = "01"
                     // Verranno utilizzati questi dati
-                    // nel caso in cui data scatto
-                    // e data original non siano presenti
-                    string parsedDate =frmPhotoSearchMoveHelpers.ReadExifData(file);                    
+                    // nel caso in cui il nome del file non contiene
+                    // anno e mese o data scatto e
+                    // data original non siano presenti
+                    string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
                     anno = parsedDate[..4];
                     mese = parsedDate.Substring(4, 2);
                 }
@@ -208,20 +204,35 @@ namespace PhotoMoveYearMonthFolder
                 // nel caso esista già rinomino il file
                 // nella cartella destinazione.
                 // Il file di origine resta invariato
-                string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));                
+                string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
+                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
+                bool fileExists = File.Exists(destinazioneFile);
+                bool areFilesIdentical = fileExists && fileHashes.Contains(fileHash);
 
+                if (!areFilesIdentical)
+                {
+                    string destinationFile = fileExists ? FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile) : destinazioneFile;
+                    await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
+                    Logger.Log($"Copiato {file} {destinationFile}");
+                    fileHashes.Add(fileHash);
+                }
+                else
+                {
+                    Logger.Log($"Saltato {file} {destinazioneFile}");
+                }
+
+                /*
                 if (File.Exists(destinazioneFile))
                 {
                     // Se il file che devo copiare è
                     // identico al file che già esiste (calcolo HASH dei file)
-                    // NON eseguo la copia.
-                    bool areFilesIdentical = false;
+                    // NON eseguo la copia.                    
                     int tentativi = 0;
                     while (tentativi < 5)
                     {
                         try
                         {
-                            areFilesIdentical = frmPhotoSearchMoveHelpers.FilesAreIdentical(file, destinazioneFile);
+                            areFilesIdentical = FrmPhotoSearchMoveHelpers.FilesAreIdentical(file, destinazioneFile);
                             break;  // Uscire dal ciclo se FilesAreIdentical non lancia un'eccezione
                         }
                         catch (IOException)
@@ -234,34 +245,35 @@ namespace PhotoMoveYearMonthFolder
                     }
 
                     if (!areFilesIdentical)
-                    {
-                        processedFiles = Interlocked.Increment(ref processedFiles);
-                        string newFileName = frmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                        await frmPhotoSearchMoveHelpers.CopyFileAsync(file, newFileName);
+                    {                        
+                        string newFileName = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, newFileName);
                         Logger.Log("Copiato " + file + " " + newFileName + " ");
+                        fileHashes.Add(fileHash);
                     }
                     else
-                    {
+                    {                        
                         Logger.Log("Saltato " + file + " " + destinazioneFile + " ");
                     }
                 }
                 else
-                {
-                    processedFiles = Interlocked.Increment(ref processedFiles);
-                    await frmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
+                {                    
+                    await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
                     Logger.Log("Copiato " + file + " " + destinazioneFile + " ");
+                    fileHashes.Add(fileHash);
                 }
-
-                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = "Num. file processati: " + processedFiles.ToString()));
-                pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
-
+                */
             }
             catch (FormatException)
             {
-                Logger.Log("Eccezione formato data " + file);
+                Logger.Log($"Eccezione formato data {file}");
             }
             finally
             {
+                processedFiles = Interlocked.Increment(ref processedFiles);
+                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = "Num. file processati: " + processedFiles.ToString()));
+                pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
+
                 // Rilascia il semaforo (equivalente a uscire da un blocco 'lock')
                 semaphoreLock.Release();
             }
