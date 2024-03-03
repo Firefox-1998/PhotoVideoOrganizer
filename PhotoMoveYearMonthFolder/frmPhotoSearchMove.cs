@@ -45,7 +45,7 @@ namespace PhotoMoveYearMonthFolder
 
         private async void Btn_Start_Click(object sender, EventArgs e)
         {
-            fileHashes = [];
+            fileHashes = new HashSet<string>();
             isProcessing = true;
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
@@ -55,61 +55,42 @@ namespace PhotoMoveYearMonthFolder
                 Btn_Cancel.Enabled = true;
                 processedFiles = 0;
 
-                /*
-                ParallelOptions options = new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = 20
-                };
-                */
-
-                // Elabora tutte le immagini nella cartella e nelle sottocartelle
                 try
                 {
                     var semaphore = new SemaphoreSlim(10); // Imposta il numero massimo di thread a 10
-                    var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories);                    
-                    int numFiles = files.Count();
+                    var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
+                    int numFiles = files.Count;
 
-                    LblNumFiles.Text = "Num. file da processare: " + numFiles;
+                    LblNumFiles.Text = $"Num. file da processare: {numFiles}";
                     pbProcessFiles.Maximum = numFiles;
 
-                    int i = 0;
-                    /*_ = Parallel.ForEach(files, options, (file) =>*/
-                    _ = Parallel.ForEach(files, (file) =>
+                    var tasks = files.Select((file, i) =>
                     {
-                        // Controlla se è un file immagine
-                        if (FrmPhotoSearchMoveHelpers.IsValidFile(file))
+                        var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
+                        var lblFileNumProc = LblFileProc;
+                        var progressbarNumFileProc = pbProcessFiles;
+                        return Task.Run(async () =>
                         {
-                            var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
-                            var lblFileNumProc = LblFileProc;
-                            var progressbarNumFileProc = pbProcessFiles;
-                            var task = Task.Run(async () =>
+                            await semaphore.WaitAsync(_cancellationTokenSource.Token);
+                            try
                             {
-                                await semaphore.WaitAsync(_cancellationTokenSource.Token);
-                                try
-                                {
-                                    await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc, progressbarNumFileProc);
-                                }
-                                finally
-                                {
-                                    _ = semaphore.Release();
-                                }
-                            });
-                            tasks.Add(task);
-                            task.ContinueWith(t =>
+                                await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc, progressbarNumFileProc);
+                            }
+                            finally
                             {
-                                while (!tasks.TryTake(out _)) { } // Rimuove il task dalla lista quando è completato
-                            });
-                            i++;
-                        }
+                                semaphore.Release();
+                            }
+                        }, _cancellationTokenSource.Token);
                     });
+
                     await Task.WhenAll(tasks);
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Si è verificato un errore: " + ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Si è verificato un errore: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                finally 
+                finally
                 {
                     _cancellationTokenSource.Dispose();
                 }
@@ -121,6 +102,7 @@ namespace PhotoMoveYearMonthFolder
             }
             isProcessing = false;
         }
+
 
         private void Btn_DirSearch_Click(object sender, EventArgs e)
         {
