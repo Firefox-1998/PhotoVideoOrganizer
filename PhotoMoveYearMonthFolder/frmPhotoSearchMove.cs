@@ -60,6 +60,7 @@ namespace PhotoMoveYearMonthFolder
 
                 try
                 {
+                    Logger.Log($">>> START <<<");
                     var semaphore = new SemaphoreSlim(10); // Imposta il numero massimo di thread a 10
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
                     int numFiles = files.Count;
@@ -91,12 +92,14 @@ namespace PhotoMoveYearMonthFolder
                     });
 
                     await Task.WhenAll(tasks);
+                    Logger.Log($">>> END <<<");
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
                     if (!_cancellationTokenSource.IsCancellationRequested)
                     {
+                        Logger.Log($">>> ERRORE: {ex.Message} <<<");
                         MessageBox.Show($"Si è verificato un errore: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }                    
                 }
@@ -120,7 +123,6 @@ namespace PhotoMoveYearMonthFolder
                 }
             }
         }
-
 
         private void Btn_DirSearch_Click(object sender, EventArgs e)
         {
@@ -229,11 +231,16 @@ namespace PhotoMoveYearMonthFolder
                 e.Cancel = true;
                 MessageBox.Show("Non è possibile chiudere la form durante l'elaborazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            else
+            {
+                Logger.Log($">>> EXIT <<<");
+            }
         }
 
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
             _cancellationTokenSource.Cancel();
+            Logger.Log($">>> CANCEL REQUEST !!! <<<");
             Btn_Cancel.Enabled = false;
             Btn_Cancel.Text = "Wait...";
         }
