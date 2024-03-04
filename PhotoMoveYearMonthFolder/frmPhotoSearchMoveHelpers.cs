@@ -15,28 +15,17 @@ internal static partial class FrmPhotoSearchMoveHelpers
         await sourceStream.CopyToAsync(destinationStream);
     }
 
-    public static bool FilesAreIdentical(string path1, string path2)
-    {
-        using SHA256 sha256 = SHA256.Create();
-        byte[] hash1 = GetFileHash(sha256, path1);
-        byte[] hash2 = GetFileHash(sha256, path2);
-
-        for (int i = 0; i < hash1.Length; i++)
-        {
-            if (hash1[i] != hash2[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public static string ComputeHash(string file)
     {
         using SHA256 sha256 = SHA256.Create();
         byte[] hash1 = GetFileHash(sha256, file);
         return BitConverter.ToString(value: hash1).Replace("-", string.Empty);        
+    }
+
+    private static byte[] GetFileHash(SHA256 sha256, string path)
+    {
+        FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return sha256.ComputeHash(stream);
     }
 
     public static string GenerateNewFileName(string filePath)
@@ -57,11 +46,6 @@ internal static partial class FrmPhotoSearchMoveHelpers
         return Path.Combine(directory, newFileName);
     }
 
-    private static byte[] GetFileHash(SHA256 sha256, string path)
-    {
-        FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return sha256.ComputeHash(stream);
-    }
 
     public static bool IsValidFile(string file)
     {
@@ -69,7 +53,7 @@ internal static partial class FrmPhotoSearchMoveHelpers
         string extension = Path.GetExtension(file).ToLower();
 
         // Elenco di estensioni di file immagine
-        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4"];
+        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4", ".mkv"];
 
         // Restituisce true se l'estensione è presente nell'elenco
         return validExtensions.Contains(extension);

@@ -71,8 +71,9 @@ namespace PhotoMoveYearMonthFolder
                     {
                         /*
                         var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
-                        var lblFileNumProc = LblFileProc;
                         */
+
+                        var lblFileNumProc = LblFileProc;                        
                         var progressbarNumFileProc = pbProcessFiles;
                         return Task.Run(async () =>
                         {
@@ -80,7 +81,7 @@ namespace PhotoMoveYearMonthFolder
                             try
                             {
                                 /*await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc, progressbarNumFileProc);*/
-                                await ProcessFileAsync(file, progressbarNumFileProc);
+                                await ProcessFileAsync(file, lblFileNumProc, progressbarNumFileProc);
                             }
                             finally
                             {
@@ -108,7 +109,15 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirSearch.Enabled = true;
                 Btn_Start.Enabled = true;
                 Btn_Cancel.Enabled = false;
+                Btn_Cancel.Text = "Cancel";
                 isProcessing = false;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(sSearchDir) || string.IsNullOrEmpty(sDestDir) || sSearchDir.Equals(sDestDir))
+                {
+                    MessageBox.Show($"Verificare la corretezza delle directory di origine e destinazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
         }
 
@@ -132,7 +141,7 @@ namespace PhotoMoveYearMonthFolder
         }
 
         /*private async Task ProcessFileAsync(string file, Label lblFileNameProc, Label lblFileNumProc, ProgressBar pbNumFilesProc)*/
-        private async Task ProcessFileAsync(string file, ProgressBar pbNumFilesProc)
+        private async Task ProcessFileAsync(string file, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
             await semaphoreLock.WaitAsync();
             try
@@ -206,7 +215,7 @@ namespace PhotoMoveYearMonthFolder
             finally
             {
                 processedFiles = Interlocked.Increment(ref processedFiles);
-                /*lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = $"Num. file processati: {processedFiles}"));*/
+                lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = $"Num. file processati: {processedFiles}"));
                 pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
 
                 semaphoreLock.Release();
@@ -225,6 +234,8 @@ namespace PhotoMoveYearMonthFolder
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
             _cancellationTokenSource.Cancel();
+            Btn_Cancel.Enabled = false;
+            Btn_Cancel.Text = "Wait...";
         }
     }
 }
