@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmPhotoSearchMove));
             Lbl_DirSearch = new Label();
             Btn_DirSearch = new Button();
             Lbl_DirDestination = new Label();
@@ -80,7 +81,7 @@
             // 
             // Btn_Start
             // 
-            Btn_Start.Location = new Point(360, 655);
+            Btn_Start.Location = new Point(360, 111);
             Btn_Start.Name = "Btn_Start";
             Btn_Start.Size = new Size(102, 44);
             Btn_Start.TabIndex = 4;
@@ -95,7 +96,7 @@
             // LblNumFiles
             // 
             LblNumFiles.AutoSize = true;
-            LblNumFiles.Location = new Point(12, 734);
+            LblNumFiles.Location = new Point(12, 190);
             LblNumFiles.Name = "LblNumFiles";
             LblNumFiles.Size = new Size(12, 15);
             LblNumFiles.TabIndex = 5;
@@ -104,7 +105,7 @@
             // LblFileProc
             // 
             LblFileProc.AutoSize = true;
-            LblFileProc.Location = new Point(192, 734);
+            LblFileProc.Location = new Point(192, 190);
             LblFileProc.Name = "LblFileProc";
             LblFileProc.Size = new Size(12, 15);
             LblFileProc.TabIndex = 6;
@@ -113,7 +114,7 @@
             // Btn_Cancel
             // 
             Btn_Cancel.Enabled = false;
-            Btn_Cancel.Location = new Point(360, 705);
+            Btn_Cancel.Location = new Point(360, 161);
             Btn_Cancel.Name = "Btn_Cancel";
             Btn_Cancel.Size = new Size(102, 44);
             Btn_Cancel.TabIndex = 7;
@@ -123,7 +124,7 @@
             // 
             // pbProcessFiles
             // 
-            pbProcessFiles.Location = new Point(10, 762);
+            pbProcessFiles.Location = new Point(10, 218);
             pbProcessFiles.Name = "pbProcessFiles";
             pbProcessFiles.Size = new Size(452, 23);
             pbProcessFiles.Step = 1;
@@ -134,7 +135,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 792);
+            ClientSize = new Size(474, 251);
             Controls.Add(pbProcessFiles);
             Controls.Add(Btn_Cancel);
             Controls.Add(LblFileProc);
@@ -144,9 +145,11 @@
             Controls.Add(Lbl_DirDestination);
             Controls.Add(Btn_DirSearch);
             Controls.Add(Lbl_DirSearch);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
             Name = "FrmPhotoSearchMove";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Photo Search, Move And Divide to Year - Month";
+            Text = "Photo/Video Search, Copy And Divide to Year - Month";
             FormClosing += FrmPhotoSearchMove_FormClosing;
             ResumeLayout(false);
             PerformLayout();

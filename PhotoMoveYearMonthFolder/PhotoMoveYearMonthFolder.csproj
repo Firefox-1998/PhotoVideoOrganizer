@@ -6,7 +6,18 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Title>Photo/Video Copy And Divide Year/Month</Title>
+    <Copyright>Firefox_1998 (C) 2024</Copyright>
+    <PackageIcon>photography-icon.png</PackageIcon>
+    <Description>This program search photo, video and copy in destination path dividing the files by year and month of shooting </Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\photography-icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ExifLib" Version="1.7.0" />

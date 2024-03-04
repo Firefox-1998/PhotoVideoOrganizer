@@ -22,28 +22,6 @@ namespace PhotoMoveYearMonthFolder
         public FrmPhotoSearchMove()
         {
             InitializeComponent();
-            /*
-            for (int i = 0; i < Lbl_Desc.Length; i++)
-            {
-                Lbl_Desc[i] = new Label
-                {
-                    Name = "Lbl_Desc" + i,
-                    AutoSize = true,
-                    Text = "File processed " + (i + 1).ToString("D2") + ":",
-                    Location = new Point(12, (i * 20) + 127) // Posiziona le label verticalmente
-                };
-                Controls.Add(Lbl_Desc[i]); // Aggiungi la label alla form
-
-                Lbl_FileNameProc[i] = new Label
-                {
-                    Name = "Lbl_FileNameProc" + i,
-                    AutoSize = true,
-                    Text = "-",
-                    Location = new Point(110, (i * 20) + 127) // Posiziona le label verticalmente
-                };
-                Controls.Add(Lbl_FileNameProc[i]); // Aggiungi la label alla form
-            } 
-            */
         }
 
         private async void Btn_Start_Click(object sender, EventArgs e)
@@ -74,14 +52,13 @@ namespace PhotoMoveYearMonthFolder
                         var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
                         */
 
-                        var lblFileNumProc = LblFileProc;                        
+                        var lblFileNumProc = LblFileProc;
                         var progressbarNumFileProc = pbProcessFiles;
                         return Task.Run(async () =>
                         {
                             await semaphore.WaitAsync(_cancellationTokenSource.Token);
                             try
                             {
-                                /*await ProcessFileAsync(file, lblFileNameProc, lblFileNumProc, progressbarNumFileProc);*/
                                 await ProcessFileAsync(file, lblFileNumProc, progressbarNumFileProc);
                             }
                             finally
@@ -92,8 +69,7 @@ namespace PhotoMoveYearMonthFolder
                     });
 
                     await Task.WhenAll(tasks);
-                    Logger.Log($">>> END <<<");
-                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    Logger.Log($">>> END <<<");                    
                 }
                 catch (Exception ex)
                 {
@@ -101,19 +77,23 @@ namespace PhotoMoveYearMonthFolder
                     {
                         Logger.Log($">>> ERRORE: {ex.Message} <<<");
                         MessageBox.Show($"Si è verificato un errore: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }                    
+                    }
                 }
                 finally
                 {
                     _cancellationTokenSource.Dispose();
+                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LblNumFiles.Text = "-";
+                    LblFileProc.Text = "-";
+                    pbProcessFiles.Value = 0;
+                    pbProcessFiles.Maximum = 100;
+                    Btn_DirDest.Enabled = true;
+                    Btn_DirSearch.Enabled = true;
+                    Btn_Start.Enabled = true;
+                    Btn_Cancel.Enabled = false;
+                    Btn_Cancel.Text = "Cancel";
+                    isProcessing = false;
                 }
-
-                Btn_DirDest.Enabled = true;
-                Btn_DirSearch.Enabled = true;
-                Btn_Start.Enabled = true;
-                Btn_Cancel.Enabled = false;
-                Btn_Cancel.Text = "Cancel";
-                isProcessing = false;
             }
             else
             {
@@ -142,14 +122,11 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        /*private async Task ProcessFileAsync(string file, Label lblFileNameProc, Label lblFileNumProc, ProgressBar pbNumFilesProc)*/
         private async Task ProcessFileAsync(string file, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
             await semaphoreLock.WaitAsync();
             try
             {
-                /*lblFileNameProc.Invoke((Action)(() => lblFileNameProc.Text = file.Length > 40 ? file[^40..] : file));*/
-
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 string anno, mese;
 
@@ -226,7 +203,7 @@ namespace PhotoMoveYearMonthFolder
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (tasks.Any(t => !t.IsCompleted) && isProcessing) // Controlla se ci sono task non completati e is processing è true
+            if (isProcessing) // Controlla se ci sono task non completati e isProcessing è true
             {
                 e.Cancel = true;
                 MessageBox.Show("Non è possibile chiudere la form durante l'elaborazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
