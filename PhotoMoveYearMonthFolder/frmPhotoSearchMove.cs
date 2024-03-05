@@ -6,12 +6,7 @@ namespace PhotoMoveYearMonthFolder
     {
         private readonly SemaphoreSlim semaphoreLock = new(1, 1);
 
-        /*
-        private Label[] Lbl_Desc = new Label[25]; // Crea un array di n Label
-        private Label[] Lbl_FileNameProc = new Label[25]; // Crea un array di n Label
-        */
-
-        private string sSearchDir = "";
+         private string sSearchDir = "";
         private string sDestDir = "";
         private bool isProcessing;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -48,10 +43,6 @@ namespace PhotoMoveYearMonthFolder
 
                     var tasks = files.Select((file, i) =>
                     {
-                        /*
-                        var lblFileNameProc = Lbl_FileNameProc[i % Lbl_FileNameProc.Length];
-                        */
-
                         var lblFileNumProc = LblFileProc;
                         var progressbarNumFileProc = pbProcessFiles;
                         return Task.Run(async () =>
