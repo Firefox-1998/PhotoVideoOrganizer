@@ -148,6 +148,12 @@ namespace PhotoMoveYearMonthFolder
                     mese = parsedDate[4..6];
                 }
 
+                if (int.Parse(anno) < 1970)
+                {
+                    anno = "1970";
+                    mese = "01";
+                }
+
                 string cartellaAnno = Path.Combine(sDestDir, anno);
                 Directory.CreateDirectory(cartellaAnno);
 
