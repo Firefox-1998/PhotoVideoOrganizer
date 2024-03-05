@@ -52,9 +52,9 @@
             // 
             // Btn_DirSearch
             // 
-            Btn_DirSearch.Location = new Point(360, 12);
+            Btn_DirSearch.Location = new Point(351, 12);
             Btn_DirSearch.Name = "Btn_DirSearch";
-            Btn_DirSearch.Size = new Size(102, 44);
+            Btn_DirSearch.Size = new Size(111, 44);
             Btn_DirSearch.TabIndex = 1;
             Btn_DirSearch.Text = "Select Directory To Image Search";
             Btn_DirSearch.UseVisualStyleBackColor = true;
@@ -71,9 +71,9 @@
             // 
             // Btn_DirDest
             // 
-            Btn_DirDest.Location = new Point(360, 59);
+            Btn_DirDest.Location = new Point(351, 59);
             Btn_DirDest.Name = "Btn_DirDest";
-            Btn_DirDest.Size = new Size(102, 44);
+            Btn_DirDest.Size = new Size(111, 44);
             Btn_DirDest.TabIndex = 3;
             Btn_DirDest.Text = "Select Directory To Image Copy";
             Btn_DirDest.UseVisualStyleBackColor = true;
@@ -81,9 +81,9 @@
             // 
             // Btn_Start
             // 
-            Btn_Start.Location = new Point(360, 111);
+            Btn_Start.Location = new Point(351, 111);
             Btn_Start.Name = "Btn_Start";
-            Btn_Start.Size = new Size(102, 44);
+            Btn_Start.Size = new Size(111, 44);
             Btn_Start.TabIndex = 4;
             Btn_Start.Text = "Start";
             Btn_Start.UseVisualStyleBackColor = true;
@@ -114,9 +114,9 @@
             // Btn_Cancel
             // 
             Btn_Cancel.Enabled = false;
-            Btn_Cancel.Location = new Point(360, 161);
+            Btn_Cancel.Location = new Point(351, 161);
             Btn_Cancel.Name = "Btn_Cancel";
-            Btn_Cancel.Size = new Size(102, 44);
+            Btn_Cancel.Size = new Size(111, 44);
             Btn_Cancel.TabIndex = 7;
             Btn_Cancel.Text = "Cancel";
             Btn_Cancel.UseVisualStyleBackColor = true;

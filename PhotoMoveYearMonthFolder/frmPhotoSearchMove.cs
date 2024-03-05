@@ -90,8 +90,14 @@ namespace PhotoMoveYearMonthFolder
                     Btn_DirDest.Enabled = true;
                     Btn_DirSearch.Enabled = true;
                     Btn_Start.Enabled = true;
-                    Btn_Cancel.Enabled = false;
-                    Btn_Cancel.Text = "Cancel";
+                    if (Btn_Cancel.Enabled)
+                    {
+                        Btn_Cancel.Enabled = false;
+                    }
+                    else
+                    {
+                        Btn_Cancel.Text = "Cancel";
+                    }                    
                     isProcessing = false;
                 }
             }
@@ -216,10 +222,14 @@ namespace PhotoMoveYearMonthFolder
 
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
-            _cancellationTokenSource.Cancel();
-            Logger.Log($">>> CANCEL REQUEST !!! <<<");
-            Btn_Cancel.Enabled = false;
-            Btn_Cancel.Text = "Wait...";
+            DialogResult Cancelrequest = MessageBox.Show("Confermi l'interruzione dell'elaborazione?", "Info", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            if (Cancelrequest == DialogResult.Yes)
+            {
+                _cancellationTokenSource.Cancel();
+                Logger.Log($">>> CANCEL REQUEST !!! <<<");
+                Btn_Cancel.Enabled = false;
+                Btn_Cancel.Text = "CANCEL REQUEST\r\nWait...";
+            }
         }
     }
 }
