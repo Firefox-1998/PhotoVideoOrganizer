@@ -4,9 +4,9 @@ namespace PhotoMoveYearMonthFolder
 {
     public partial class FrmPhotoSearchMove : Form
     {
+        private const string SuffixLogFile = "yyyyMMdd-HHmmss";
         private readonly SemaphoreSlim semaphoreLock = new(1, 1);
-
-         private string sSearchDir = "";
+        private string sSearchDir = "";
         private string sDestDir = "";
         private bool isProcessing;
         private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -23,6 +23,7 @@ namespace PhotoMoveYearMonthFolder
         {
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
+                Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyLog.txt");
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
@@ -60,6 +61,7 @@ namespace PhotoMoveYearMonthFolder
                     });
 
                     await Task.WhenAll(tasks);
+                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Logger.Log($">>> END <<<");                    
                 }
                 catch (Exception ex)
@@ -72,8 +74,7 @@ namespace PhotoMoveYearMonthFolder
                 }
                 finally
                 {
-                    _cancellationTokenSource.Dispose();
-                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _cancellationTokenSource.Dispose();                    
                     LblNumFiles.Text = "-";
                     LblFileProc.Text = "-";
                     pbProcessFiles.Value = 0;
@@ -127,7 +128,10 @@ namespace PhotoMoveYearMonthFolder
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 string anno, mese;
 
-                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) || nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase))
+                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) || 
+                    nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) || 
+                    nomeFile.StartsWith("AUD-", StringComparison.OrdinalIgnoreCase) || 
+                    nomeFile.StartsWith("PPT-", StringComparison.OrdinalIgnoreCase))
                 {
                     anno = nomeFile[4..8];
                     mese = nomeFile[8..10];

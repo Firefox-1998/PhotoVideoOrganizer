@@ -46,14 +46,13 @@ internal static partial class FrmPhotoSearchMoveHelpers
         return Path.Combine(directory, newFileName);
     }
 
-
     public static bool IsValidFile(string file)
     {
         // Ottieni l'estensione del file
         string extension = Path.GetExtension(file).ToLower();
 
         // Elenco di estensioni di file immagine
-        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4", ".mkv"];
+        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4", ".mkv", ".opus", ".mp3", ".m4a"];
 
         // Restituisce true se l'estensione è presente nell'elenco
         return validExtensions.Contains(extension);

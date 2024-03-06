@@ -4,10 +4,10 @@ using System.Timers;
 namespace PhotoMoveYearMonthFolder
 {
     public static class Logger
-    {
-        private static readonly string logFilePath = "E:\\MyTemp\\OUT_TestIMG_log.txt";
+    {        
         private static readonly ConcurrentQueue<string> logMessages = new();
         private static readonly System.Timers.Timer flushTimer;
+        private static string logFilePath=""; // Aggiungi questa linea
 
         static Logger()
         {
@@ -15,6 +15,11 @@ namespace PhotoMoveYearMonthFolder
             flushTimer.Elapsed += FlushLogToFile;
             flushTimer.AutoReset = true;
             flushTimer.Enabled = true;
+        }
+
+        public static void SetLogFilePath(string path)
+        {
+            logFilePath = path; // Imposta il percorso ed il nome del file di log
         }
 
         public static void Log(string message)
