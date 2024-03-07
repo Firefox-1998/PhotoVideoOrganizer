@@ -9,7 +9,7 @@ namespace PhotoMoveYearMonthFolder
         private string sSearchDir = "";
         private string sDestDir = "";
         private bool isProcessing;
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private CancellationTokenSource? _cancellationTokenSource;
         private int processedFiles = 0;
         private readonly ConcurrentBag<Task> tasks = new(); // Usa ConcurrentBag invece di List o HashSet
         private ConcurrentDictionary<string, byte> fileHashes = new();
@@ -23,6 +23,7 @@ namespace PhotoMoveYearMonthFolder
         {
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
+                _cancellationTokenSource = new();
                 Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyLog.txt");
                 tbMaxThread.Enabled = false;
                 Btn_DirDest.Enabled = false;
@@ -228,16 +229,16 @@ namespace PhotoMoveYearMonthFolder
             DialogResult Cancelrequest = MessageBox.Show("Confermi l'interruzione dell'elaborazione?", "Info", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
             if (Cancelrequest == DialogResult.Yes)
             {
-                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource?.Cancel();
                 Logger.Log($">>> CANCEL REQUEST !!! <<<");
                 Btn_Cancel.Enabled = false;
                 Btn_Cancel.Text = "CANCEL REQUEST\r\nWait...";
             }
         }
 
-        private void tbMaxThread_Scroll(object sender, EventArgs e)
+        private void TbMaxThread_Scroll(object sender, EventArgs e)
         {
-            lblMaxThread.Text = @"Max Thread: {tbMaxThread.Text.Trim()}";
+            lblMaxThread.Text = "Max Thread: " + tbMaxThread.Value.ToString();
         }
     }
 }

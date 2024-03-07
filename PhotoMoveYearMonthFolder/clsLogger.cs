@@ -7,7 +7,7 @@ namespace PhotoMoveYearMonthFolder
     {        
         private static readonly ConcurrentQueue<string> logMessages = new();
         private static readonly System.Timers.Timer flushTimer;
-        private static string logFilePath=""; // Aggiungi questa linea
+        private static string logFilePath = "";
 
         static Logger()
         {
@@ -27,7 +27,7 @@ namespace PhotoMoveYearMonthFolder
             logMessages.Enqueue($"{DateTime.Now}: {message}");
         }
 
-        private static void FlushLogToFile(object source, ElapsedEventArgs e)
+        private static void FlushLogToFile(object? source, ElapsedEventArgs e)
         {
             while (!logMessages.IsEmpty)
             {

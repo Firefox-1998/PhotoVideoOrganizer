@@ -143,7 +143,7 @@
             tbMaxThread.Size = new Size(202, 45);
             tbMaxThread.TabIndex = 9;
             tbMaxThread.Value = 10;
-            tbMaxThread.Scroll += tbMaxThread_Scroll;
+            tbMaxThread.Scroll += TbMaxThread_Scroll;
             // 
             // lblMaxThread
             // 
@@ -170,6 +170,7 @@
             Controls.Add(Lbl_DirDestination);
             Controls.Add(Btn_DirSearch);
             Controls.Add(Lbl_DirSearch);
+            FormBorderStyle = FormBorderStyle.Fixed3D;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "FrmPhotoSearchMove";
