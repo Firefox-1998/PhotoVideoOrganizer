@@ -39,6 +39,9 @@
             LblFileProc = new Label();
             Btn_Cancel = new Button();
             pbProcessFiles = new ProgressBar();
+            tbMaxThread = new TrackBar();
+            lblMaxThread = new Label();
+            ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
             // Lbl_DirSearch
@@ -131,11 +134,33 @@
             pbProcessFiles.Style = ProgressBarStyle.Continuous;
             pbProcessFiles.TabIndex = 8;
             // 
+            // tbMaxThread
+            // 
+            tbMaxThread.Location = new Point(137, 111);
+            tbMaxThread.Maximum = 20;
+            tbMaxThread.Minimum = 1;
+            tbMaxThread.Name = "tbMaxThread";
+            tbMaxThread.Size = new Size(202, 45);
+            tbMaxThread.TabIndex = 9;
+            tbMaxThread.Value = 10;
+            tbMaxThread.Scroll += tbMaxThread_Scroll;
+            // 
+            // lblMaxThread
+            // 
+            lblMaxThread.BorderStyle = BorderStyle.FixedSingle;
+            lblMaxThread.Location = new Point(12, 111);
+            lblMaxThread.Name = "lblMaxThread";
+            lblMaxThread.Size = new Size(102, 18);
+            lblMaxThread.TabIndex = 10;
+            lblMaxThread.Text = "Max Thread: 10";
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(474, 251);
+            Controls.Add(lblMaxThread);
+            Controls.Add(tbMaxThread);
             Controls.Add(pbProcessFiles);
             Controls.Add(Btn_Cancel);
             Controls.Add(LblFileProc);
@@ -151,6 +176,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Photo/Video Search, Copy And Divide to Year - Month";
             FormClosing += FrmPhotoSearchMove_FormClosing;
+            ((System.ComponentModel.ISupportInitialize)tbMaxThread).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -167,5 +193,7 @@
         private Label LblFileProc;
         private Button Btn_Cancel;
         private ProgressBar pbProcessFiles;
+        private TrackBar tbMaxThread;
+        private Label lblMaxThread;
     }
 }

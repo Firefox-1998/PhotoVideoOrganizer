@@ -24,6 +24,7 @@ namespace PhotoMoveYearMonthFolder
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
                 Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyLog.txt");
+                tbMaxThread.Enabled = false;
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
@@ -35,7 +36,7 @@ namespace PhotoMoveYearMonthFolder
                 try
                 {
                     Logger.Log($">>> START <<<");
-                    var semaphore = new SemaphoreSlim(10); // Imposta il numero massimo di thread a 10
+                    var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
                     int numFiles = files.Count;
 
@@ -62,7 +63,7 @@ namespace PhotoMoveYearMonthFolder
 
                     await Task.WhenAll(tasks);
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Logger.Log($">>> END <<<");                    
+                    Logger.Log($">>> END <<<");
                 }
                 catch (Exception ex)
                 {
@@ -74,11 +75,12 @@ namespace PhotoMoveYearMonthFolder
                 }
                 finally
                 {
-                    _cancellationTokenSource.Dispose();                    
+                    _cancellationTokenSource.Dispose();
                     LblNumFiles.Text = "-";
                     LblFileProc.Text = "-";
                     pbProcessFiles.Value = 0;
                     pbProcessFiles.Maximum = 100;
+                    tbMaxThread.Enabled = true;
                     Btn_DirDest.Enabled = true;
                     Btn_DirSearch.Enabled = true;
                     Btn_Start.Enabled = true;
@@ -89,7 +91,7 @@ namespace PhotoMoveYearMonthFolder
                     else
                     {
                         Btn_Cancel.Text = "Cancel";
-                    }                    
+                    }
                     isProcessing = false;
                 }
             }
@@ -128,9 +130,9 @@ namespace PhotoMoveYearMonthFolder
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 string anno, mese;
 
-                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) || 
-                    nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) || 
-                    nomeFile.StartsWith("AUD-", StringComparison.OrdinalIgnoreCase) || 
+                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) ||
+                    nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) ||
+                    nomeFile.StartsWith("AUD-", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("PPT-", StringComparison.OrdinalIgnoreCase))
                 {
                     anno = nomeFile[4..8];
@@ -231,6 +233,11 @@ namespace PhotoMoveYearMonthFolder
                 Btn_Cancel.Enabled = false;
                 Btn_Cancel.Text = "CANCEL REQUEST\r\nWait...";
             }
+        }
+
+        private void tbMaxThread_Scroll(object sender, EventArgs e)
+        {
+            lblMaxThread.Text = @"Max Thread: {tbMaxThread.Text.Trim()}";
         }
     }
 }
