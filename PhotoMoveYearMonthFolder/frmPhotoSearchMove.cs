@@ -29,14 +29,15 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
-                Btn_Cancel.Enabled = true;
-                fileHashes = new();
+                Btn_Cancel.Enabled = true;                
                 isProcessing = true;
                 processedFiles = 0;
 
                 try
                 {
-                    Logger.Log($">>> START <<<");
+                    fileHashes = new();
+                    // Processo i file con estensione valida jpg, jpeg, ecc
+                    Logger.Log($">>> START VALID EXT<<<");
                     var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
                     var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
                     int numFiles = files.Count;
@@ -62,9 +63,34 @@ namespace PhotoMoveYearMonthFolder
                         }, _cancellationTokenSource.Token);
                     });
 
+                    await Task.WhenAll(tasks);                    
+                    Logger.Log($">>> END VALID EXT <<<");
+
+                    // Processo i file con "NON" hanno un'estensione valida jpg, jpeg, ecc.
+                    // e li copio nella directory "OtherFilesExt"
+                    fileHashes = new();
+                    Logger.Log($">>> START >> NOT << VALID EXT<<<");
+                    files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)).ToList();
+                    tasks = files.Select((file, i) =>
+                    {
+                        return Task.Run(async () =>
+                        {
+                            await semaphore.WaitAsync(_cancellationTokenSource.Token);
+                            try
+                            {
+                                await ProcessFileAsyncNotValidExt(file);
+                            }
+                            finally
+                            {
+                                semaphore.Release();
+                            }
+                        }, _cancellationTokenSource.Token);
+                    });
+
                     await Task.WhenAll(tasks);
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Logger.Log($">>> END <<<");
+                    Logger.Log($">>> END > NOT < VALID EXT <<<");
+
                 }
                 catch (Exception ex)
                 {
@@ -207,6 +233,64 @@ namespace PhotoMoveYearMonthFolder
                 lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = $"Num. file processati: {processedFiles}"));
                 pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
 
+                semaphoreLock.Release();
+            }
+        }
+
+        private async Task ProcessFileAsyncNotValidExt(string file)
+        {
+            await semaphoreLock.WaitAsync();
+            try
+            {
+                string nomeFile = Path.GetFileNameWithoutExtension(file);
+                string cartellaOtherExt = Path.Combine(sDestDir, "OtherFilesExt");
+                Directory.CreateDirectory(cartellaOtherExt);
+
+                string destinazioneFile = Path.Combine(cartellaOtherExt, nomeFile + Path.GetExtension(file));
+                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
+                bool fileExists = File.Exists(destinazioneFile);
+                bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
+
+                if (!areFilesIdentical)
+                {
+                    if (fileExists)
+                    {
+                        // Calcola l'hash del file esistente
+                        string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+
+                        if (fileHash != existingFileHash)
+                        {
+                            // I file sono diversi, quindi copia il file con un nuovo nome
+                            string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
+                            Logger.Log($"Copiato {file} {destinationFile}");
+                            fileHashes.TryAdd(fileHash, 0);
+                        }
+                        else
+                        {
+                            // I file sono identici, quindi salta la copia del file
+                            Logger.Log($"Saltato {file} {destinazioneFile}");
+                        }
+                    }
+                    else
+                    {
+                        // Il file non esiste, quindi copia il file
+                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
+                        Logger.Log($"Copiato {file} {destinazioneFile}");
+                        fileHashes.TryAdd(fileHash, 0);
+                    }
+                }
+                else
+                {
+                    Logger.Log($"Saltato {file} {destinazioneFile}");
+                }
+            }
+            catch (FormatException)
+            {
+                Logger.Log($"Eccezione formato data {file}");
+            }
+            finally
+            {
                 semaphoreLock.Release();
             }
         }
