@@ -41,6 +41,9 @@
             pbProcessFiles = new ProgressBar();
             tbMaxThread = new TrackBar();
             lblMaxThread = new Label();
+            pbProcessedOtherFiles = new ProgressBar();
+            LblOtherFileProc = new Label();
+            LblNumOtherFiles = new Label();
             ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
@@ -154,11 +157,41 @@
             lblMaxThread.TabIndex = 10;
             lblMaxThread.Text = "Max Thread: 10";
             // 
+            // pbProcessedOtherFiles
+            // 
+            pbProcessedOtherFiles.Location = new Point(10, 270);
+            pbProcessedOtherFiles.Name = "pbProcessedOtherFiles";
+            pbProcessedOtherFiles.Size = new Size(452, 23);
+            pbProcessedOtherFiles.Step = 1;
+            pbProcessedOtherFiles.Style = ProgressBarStyle.Continuous;
+            pbProcessedOtherFiles.TabIndex = 11;
+            // 
+            // LblOtherFileProc
+            // 
+            LblOtherFileProc.AutoSize = true;
+            LblOtherFileProc.Location = new Point(192, 249);
+            LblOtherFileProc.Name = "LblOtherFileProc";
+            LblOtherFileProc.Size = new Size(12, 15);
+            LblOtherFileProc.TabIndex = 13;
+            LblOtherFileProc.Text = "-";
+            // 
+            // LblNumOtherFiles
+            // 
+            LblNumOtherFiles.AutoSize = true;
+            LblNumOtherFiles.Location = new Point(12, 249);
+            LblNumOtherFiles.Name = "LblNumOtherFiles";
+            LblNumOtherFiles.Size = new Size(12, 15);
+            LblNumOtherFiles.TabIndex = 12;
+            LblNumOtherFiles.Text = "-";
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 251);
+            ClientSize = new Size(474, 294);
+            Controls.Add(LblOtherFileProc);
+            Controls.Add(LblNumOtherFiles);
+            Controls.Add(pbProcessedOtherFiles);
             Controls.Add(lblMaxThread);
             Controls.Add(tbMaxThread);
             Controls.Add(pbProcessFiles);
@@ -196,5 +229,8 @@
         private ProgressBar pbProcessFiles;
         private TrackBar tbMaxThread;
         private Label lblMaxThread;
+        private ProgressBar pbProcessedOtherFiles;
+        private Label LblOtherFileProc;
+        private Label LblNumOtherFiles;
     }
 }

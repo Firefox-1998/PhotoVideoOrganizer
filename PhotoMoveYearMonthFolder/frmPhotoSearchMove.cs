@@ -11,7 +11,7 @@ namespace PhotoMoveYearMonthFolder
         private bool isProcessing;
         private CancellationTokenSource? _cancellationTokenSource;
         private int processedFiles = 0;
-        private readonly ConcurrentBag<Task> tasks = new(); // Usa ConcurrentBag invece di List o HashSet
+        private int processedOtherFiles = 0;
         private ConcurrentDictionary<string, byte> fileHashes = new();
 
         public FrmPhotoSearchMove()
@@ -68,29 +68,36 @@ namespace PhotoMoveYearMonthFolder
 
                     // Processo i file con "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
-                    fileHashes = new();
-                    Logger.Log($">>> START >> NOT << VALID EXT<<<");
                     files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)).ToList();
-                    tasks = files.Select((file, i) =>
+                    numFiles = files.Count;
+                    LblNumOtherFiles.Text = $"Num. altri file da processare: {numFiles}";                    
+                    if (numFiles != 0)
                     {
-                        return Task.Run(async () =>
+                        fileHashes = new();
+                        pbProcessedOtherFiles.Maximum = numFiles;
+                        Logger.Log($">>> START >> NOT << VALID EXT<<<");
+                        tasks = files.Select((file, i) =>
                         {
-                            await semaphore.WaitAsync(_cancellationTokenSource.Token);
-                            try
+                            var lblOtherFileNumProc = LblOtherFileProc;
+                            var progressbarNumOtherFileProc = pbProcessedOtherFiles;
+                            return Task.Run(async () =>
                             {
-                                await ProcessFileAsyncNotValidExt(file);
-                            }
-                            finally
-                            {
-                                semaphore.Release();
-                            }
-                        }, _cancellationTokenSource.Token);
-                    });
+                                await semaphore.WaitAsync(_cancellationTokenSource.Token);
+                                try
+                                {
+                                    await ProcessFileAsyncNotValidExt(file, lblOtherFileNumProc, progressbarNumOtherFileProc);
+                                }
+                                finally
+                                {
+                                    semaphore.Release();
+                                }
+                            }, _cancellationTokenSource.Token);
+                        });
 
-                    await Task.WhenAll(tasks);
-                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Logger.Log($">>> END > NOT < VALID EXT <<<");
-
+                        await Task.WhenAll(tasks);
+                        MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        Logger.Log($">>> END > NOT < VALID EXT <<<");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -237,7 +244,7 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private async Task ProcessFileAsyncNotValidExt(string file)
+        private async Task ProcessFileAsyncNotValidExt(string file, Label lblOtherFileNumProc, ProgressBar pbNumOtherFilesProc)
         {
             await semaphoreLock.WaitAsync();
             try
@@ -291,6 +298,9 @@ namespace PhotoMoveYearMonthFolder
             }
             finally
             {
+                processedOtherFiles = Interlocked.Increment(ref processedOtherFiles);
+                lblOtherFileNumProc.Invoke((Action)(() => lblOtherFileNumProc.Text = $"Num. file processati: {processedOtherFiles}"));
+                pbNumOtherFilesProc.Invoke((Action)(() => pbNumOtherFilesProc.Value = processedOtherFiles));
                 semaphoreLock.Release();
             }
         }
