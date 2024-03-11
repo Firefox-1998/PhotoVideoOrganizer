@@ -75,6 +75,7 @@ namespace PhotoMoveYearMonthFolder
                     {
                         fileHashes = new();
                         pbProcessedOtherFiles.Maximum = numFiles;
+                        Logger.Log($"\r\n---------------------------------\r\n");
                         Logger.Log($">>> START >> NOT << VALID EXT<<<");
                         tasks = files.Select((file, i) =>
                         {
@@ -94,10 +95,10 @@ namespace PhotoMoveYearMonthFolder
                             }, _cancellationTokenSource.Token);
                         });
 
-                        await Task.WhenAll(tasks);
-                        MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        await Task.WhenAll(tasks);                        
                         Logger.Log($">>> END > NOT < VALID EXT <<<");
                     }
+                    MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
@@ -112,8 +113,12 @@ namespace PhotoMoveYearMonthFolder
                     _cancellationTokenSource.Dispose();
                     LblNumFiles.Text = "-";
                     LblFileProc.Text = "-";
+                    LblNumOtherFiles.Text = "-";
+                    LblOtherFileProc.Text = "-";    
                     pbProcessFiles.Value = 0;
                     pbProcessFiles.Maximum = 100;
+                    pbProcessedOtherFiles.Value = 0;
+                    pbProcessedOtherFiles.Maximum = 100;
                     tbMaxThread.Enabled = true;
                     Btn_DirDest.Enabled = true;
                     Btn_DirSearch.Enabled = true;
@@ -165,6 +170,7 @@ namespace PhotoMoveYearMonthFolder
                 string anno, mese;
 
                 if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) ||
+                    nomeFile.StartsWith("IMG_", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("AUD-", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("PPT-", StringComparison.OrdinalIgnoreCase))

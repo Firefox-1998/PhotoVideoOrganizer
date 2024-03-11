@@ -188,7 +188,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 294);
+            ClientSize = new Size(474, 300);
             Controls.Add(LblOtherFileProc);
             Controls.Add(LblNumOtherFiles);
             Controls.Add(pbProcessedOtherFiles);
