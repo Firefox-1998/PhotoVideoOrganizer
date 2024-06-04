@@ -67,7 +67,7 @@ namespace PhotoMoveYearMonthFolder
                     await Task.WhenAll(tasks);                    
                     Logger.Log($">>> END VALID EXT <<<");
 
-                    // Processo i file con "NON" hanno un'estensione valida jpg, jpeg, ecc.
+                    // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
                     //files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)).ToList();                    
                     files = GetInvalidFiles(sSearchDir);
@@ -222,34 +222,42 @@ namespace PhotoMoveYearMonthFolder
                 string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
                 bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
+                bool sameUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file) == FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
 
                 if (!areFilesIdentical)
                 {
-                    if (fileExists)
-                    {
-                        // Calcola l'hash del file esistente
-                        string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
-
-                        if (fileHash != existingFileHash)
+                    if (!sameUniqueImageID)
+                    { 
+                        if (fileExists)
                         {
-                            // I file sono diversi, quindi copia il file con un nuovo nome
-                            string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
-                            Logger.Log($"Copiato {file} {destinationFile}");
-                            fileHashes.TryAdd(fileHash, 0);
+                            // Calcola l'hash del file esistente
+                            string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+
+                            if (fileHash != existingFileHash)
+                            {
+                                // I file sono diversi, quindi copia il file con un nuovo nome
+                                string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                                await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
+                                Logger.Log($"Copiato {file} {destinationFile}");
+                                fileHashes.TryAdd(fileHash, 0);
+                            }
+                            else
+                            {
+                                // I file sono identici, quindi salta la copia del file
+                                Logger.Log($"Saltato {file} {destinazioneFile}");
+                            }
                         }
                         else
                         {
-                            // I file sono identici, quindi salta la copia del file
-                            Logger.Log($"Saltato {file} {destinazioneFile}");
+                            // Il file non esiste, quindi copia il file
+                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
+                            Logger.Log($"Copiato {file} {destinazioneFile}");
+                            fileHashes.TryAdd(fileHash, 0);
                         }
                     }
                     else
                     {
-                        // Il file non esiste, quindi copia il file
-                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
-                        Logger.Log($"Copiato {file} {destinazioneFile}");
-                        fileHashes.TryAdd(fileHash, 0);
+                        Logger.Log($"Saltato. Stesso TAG EXIF 'ImageUniqueID' {file} {destinazioneFile}");
                     }
                 }
                 else

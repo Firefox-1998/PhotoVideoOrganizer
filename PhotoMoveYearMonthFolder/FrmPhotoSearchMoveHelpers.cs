@@ -58,6 +58,28 @@ internal static partial class FrmPhotoSearchMoveHelpers
         return validExtensions.Contains(extension);
     }
 
+    public static string ReadExifUniqueImageID(string imagePath)
+    {
+        try
+        {
+            using ExifReader reader = new(imagePath);
+            // Estrai il tag Image ID
+            if (reader.GetTagValue(ExifTags.ImageUniqueID, out string imageID))
+            {
+                return imageID;
+            }
+            else
+            {
+                Logger.Log("Unique ImageID non presente " + imagePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Log("Eccezione ReadExifData " + ex.Message + " " + imagePath);
+        }
+        return "";
+    }
+
     public static string ReadExifData(string imagePath)
     {        
         string fileName = Path.GetFileName(imagePath);        
