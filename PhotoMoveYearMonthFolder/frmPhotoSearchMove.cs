@@ -222,7 +222,11 @@ namespace PhotoMoveYearMonthFolder
                 string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
                 bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
-                bool sameUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file) == FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
+
+                string fileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file);
+                string destinationFileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
+
+                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) || !string.IsNullOrEmpty(destinationFileUniqueImageID)) && fileUniqueImageID == destinationFileUniqueImageID;
 
                 if (!areFilesIdentical)
                 {
