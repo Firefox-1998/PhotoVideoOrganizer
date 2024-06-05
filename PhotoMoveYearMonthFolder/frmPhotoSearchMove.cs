@@ -451,7 +451,7 @@ namespace PhotoMoveYearMonthFolder
             }
             return invalidFiles;
         }
-        */
+        
 
         public static List<string> GetInvalidFiles(string rootPath)
         {
@@ -477,6 +477,47 @@ namespace PhotoMoveYearMonthFolder
                 // Ricorsione nelle sottodirectory
                 invalidFiles.AddRange(GetInvalidFiles(directory));
             }
+            return invalidFiles;
+        }
+        */
+        public static List<string> GetInvalidFiles(string rootPath)
+        {
+            var invalidFiles = new List<string>();
+
+            foreach (var directory in Directory.EnumerateDirectories(rootPath))
+            {
+                var directoryInfo = new DirectoryInfo(directory);
+
+                // Salta le directory di sistema o nascoste
+                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
+                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                {
+                    continue;
+                }
+
+                // Aggiungi i file non validi alla lista
+                invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file =>
+                {
+                    var fileInfo = new FileInfo(file);
+
+                    // Salta i file di sistema o nascosti
+                    if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
+                        (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
+                        fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" || 
+                        fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
+                        fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
+                    {
+                        return false;
+                    }
+
+                    // Verifica se il file è valido
+                    return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
+                }));
+
+                // Ricorsione nelle sottodirectory
+                invalidFiles.AddRange(GetInvalidFiles(directory));
+            }
+
             return invalidFiles;
         }
     }
