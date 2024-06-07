@@ -184,8 +184,8 @@ namespace PhotoMoveYearMonthFolder
                 {
                     if (nomeFile.StartsWith("Screenshot_", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        anno = nomeFile[12..16];
-                        mese = nomeFile[17..19];
+                        anno = nomeFile[11..15];
+                        mese = nomeFile[15..17];
                     }
                     else
                     {
@@ -226,7 +226,8 @@ namespace PhotoMoveYearMonthFolder
                 string fileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file);
                 string destinationFileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
 
-                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) || !string.IsNullOrEmpty(destinationFileUniqueImageID)) && fileUniqueImageID == destinationFileUniqueImageID;
+                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) || 
+                    !string.IsNullOrEmpty(destinationFileUniqueImageID)) && fileUniqueImageID == destinationFileUniqueImageID;
 
                 if (!areFilesIdentical)
                 {
@@ -503,7 +504,7 @@ namespace PhotoMoveYearMonthFolder
                     // Salta i file di sistema o nascosti
                     if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
                         (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
-                        fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" || 
+                        fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
                         fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
                         fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
                     {
