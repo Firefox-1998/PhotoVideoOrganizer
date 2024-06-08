@@ -13,6 +13,19 @@ namespace PhotoMoveYearMonthFolder
         private int processedFiles = 0;
         private int processedOtherFiles = 0;
         private ConcurrentDictionary<string, byte> fileHashes = new();
+        private readonly Dictionary<string, int> prefixToIndexMap = new Dictionary<string, int>
+        {
+            {"IMG-", 4},
+            {"IMG_", 4},
+            {"VID-", 4},
+            {"AUD-", 4},
+            {"PPT-", 4},
+            {"Screenshot_", 11},
+            {"VideoCapture_", 13},
+            {"IMG", 3},
+            {"VID", 3},
+            {"WP_", 3}
+        };
 
         public FrmPhotoSearchMove()
         {
@@ -165,12 +178,14 @@ namespace PhotoMoveYearMonthFolder
 
         private async Task ProcessFileAsync(string file, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
+
             await semaphoreLock.WaitAsync();
             try
             {
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
-                string anno, mese;
+                (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile);
 
+                /*
                 if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("IMG_", StringComparison.OrdinalIgnoreCase) ||
                     nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) ||
@@ -189,28 +204,31 @@ namespace PhotoMoveYearMonthFolder
                     }
                     else
                     {
-                        if (nomeFile.StartsWith("IMG", StringComparison.OrdinalIgnoreCase) ||
-                            nomeFile.StartsWith("VID", StringComparison.OrdinalIgnoreCase) ||
-                            nomeFile.StartsWith("WP_", StringComparison.OrdinalIgnoreCase)
-                            )
+                        if (nomeFile.StartsWith("VideoCapture_", StringComparison.OrdinalIgnoreCase))
                         {
-                            anno = nomeFile[3..7];
-                            mese = nomeFile[7..9];
+                            anno = nomeFile[13..17];
+                            mese = nomeFile[17..19];
                         }
                         else
                         {
-                            string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
-                            anno = parsedDate[..4];
-                            mese = parsedDate[4..6];
+                            if (nomeFile.StartsWith("IMG", StringComparison.OrdinalIgnoreCase) ||
+                                nomeFile.StartsWith("VID", StringComparison.OrdinalIgnoreCase) ||
+                                nomeFile.StartsWith("WP_", StringComparison.OrdinalIgnoreCase)
+                                )
+                            {
+                                anno = nomeFile[3..7];
+                                mese = nomeFile[7..9];
+                            }
+                            else
+                            {
+                                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
+                                anno = parsedDate[..4];
+                                mese = parsedDate[4..6];
+                            }
                         }
                     }
                 }
-
-                if (int.Parse(anno) < 1970 || int.Parse(anno) > DateTime.Now.Year)
-                {
-                    anno = "1970";
-                    mese = "01";
-                }
+                */
 
                 string cartellaAnno = Path.Combine(sDestDir, anno);
                 Directory.CreateDirectory(cartellaAnno);
@@ -520,6 +538,39 @@ namespace PhotoMoveYearMonthFolder
             }
 
             return invalidFiles;
+        }
+
+        public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile)
+        {
+            string anno = string.Empty;
+            string mese = string.Empty;
+            bool matchFound = false;
+
+            foreach (var entry in prefixToIndexMap)
+            {
+                if (nomeFile.StartsWith(entry.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    anno = nomeFile[entry.Value..(entry.Value + 4)];
+                    mese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
+                    matchFound = true;
+                    break; // Uscire dal ciclo non appena si trova una corrispondenza
+                }
+            }
+
+            // Se nessuna corrispondenza viene trovata nel dizionario, eseguire l'azione predefinita
+            if (!matchFound)
+            {
+                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(nomeFile);
+                anno = parsedDate[..4];
+                mese = parsedDate[4..6];
+            }
+
+            if (int.Parse(anno) < 1970 || int.Parse(anno) > DateTime.Now.Year)
+            {
+                anno = "1970";
+                mese = "01";
+            }
+            return (anno, mese);
         }
     }
 }
