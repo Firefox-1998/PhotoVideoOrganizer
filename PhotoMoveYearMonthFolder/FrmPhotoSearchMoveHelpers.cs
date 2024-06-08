@@ -5,7 +5,8 @@ using System.Text.RegularExpressions;
 
 internal static partial class FrmPhotoSearchMoveHelpers
 {
-    [GeneratedRegex(@"^\d{6}")]
+    //[GeneratedRegex(@"^\d{6}")]
+    [GeneratedRegex(@"^(?<year>\d{4})(?<month>\d{2})|^(?<year>\d{4})-(?<month>\d{2})-\d{2}")]
     private static partial Regex MyRegex();
 
     public static async Task CopyFileAsync(string sourceFile, string destinationFile)
@@ -82,13 +83,15 @@ internal static partial class FrmPhotoSearchMoveHelpers
 
     public static string ReadExifData(string imagePath)
     {        
-        string fileName = Path.GetFileName(imagePath);        
+        string fileName = Path.GetFileName(imagePath);
 
         // Prova a estrarre la data dal nome del file
         if (MyRegex().IsMatch(fileName))
         {
-            // Prendo i primi sei caratteri del nome file per determinare la data di scatto dell'immagine
-            return fileName[..6];
+            var match = MyRegex().Match(fileName);
+            var year = match.Groups["year"].Value;
+            var month = match.Groups["month"].Value;
+            return year + month;
         }
 
         string defaultDate = "19700101";

@@ -550,10 +550,17 @@ namespace PhotoMoveYearMonthFolder
             {
                 if (nomeFile.StartsWith(entry.Key, StringComparison.OrdinalIgnoreCase))
                 {
-                    anno = nomeFile[entry.Value..(entry.Value + 4)];
-                    mese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
-                    matchFound = true;
-                    break; // Uscire dal ciclo non appena si trova una corrispondenza
+                    try
+                    {
+                        anno = nomeFile[entry.Value..(entry.Value + 4)];
+                        mese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
+                        matchFound = true;
+                        break; // Uscire dal ciclo non appena si trova una corrispondenza
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        break; // Uscire dal ciclo a causa errore sulla lunghezza del nome file
+                    }
                 }
             }
 
