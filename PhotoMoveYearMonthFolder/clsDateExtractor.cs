@@ -35,7 +35,7 @@ namespace PhotoMoveYearMonthFolder
             }
 
             // Se nessun formato corrisponde, restituisci null
-            return ("1970", "01");
+            return ("9999", "99");
         }
     }
 }
