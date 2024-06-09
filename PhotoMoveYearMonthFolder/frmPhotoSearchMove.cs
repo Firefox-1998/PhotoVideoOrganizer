@@ -548,46 +548,48 @@ namespace PhotoMoveYearMonthFolder
 
         public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile, string file)
         {
-            string anno = string.Empty;
-            string mese = string.Empty;
+            string anno = "1970";
+            string mese = "01";
             bool matchFound = false;
 
             foreach (var entry in prefixToIndexMap)
             {
-                if (nomeFile.StartsWith(entry.Key, StringComparison.OrdinalIgnoreCase))
+                if (!nomeFile.StartsWith(entry.Key, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                try
                 {
-                    try
+                    var possibleAnno = nomeFile[entry.Value..(entry.Value + 4)];
+                    var possibleMese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
+                    var year = int.Parse(possibleAnno);
+
+                    if (year >= 1970 && year <= DateTime.Now.Year)
                     {
-                        anno = nomeFile[entry.Value..(entry.Value + 4)];
-                        mese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
+                        anno = possibleAnno;
+                        mese = possibleMese;
                         matchFound = true;
-                        break; // Uscire dal ciclo non appena si trova una corrispondenza
+                        break;
                     }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        continue; // continua il ciclo a causa errore sulla lunghezza del nome file
-                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // continua il ciclo a causa errore sulla lunghezza del nome file
                 }
             }
 
             if (!matchFound)
             {
                 (anno, mese) = clsDateExtractor.ExtractYearMonth(nomeFile);
+                var parsedYear = int.Parse(anno);
+
+                if (parsedYear < 1970 || parsedYear > DateTime.Now.Year)
+                {
+                    string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
+                    anno = parsedDate[..4];
+                    mese = parsedDate[4..6];
+                }
             }
 
-            // Se nessuna corrispondenza viene trovata nel dizionario, eseguire l'azione predefinita
-            if (!matchFound && (int.Parse(anno) < 1970 || int.Parse(anno) > DateTime.Now.Year))
-            {
-                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
-                anno = parsedDate[..4];
-                mese = parsedDate[4..6];
-            }
-
-            if (int.Parse(anno) < 1970 || int.Parse(anno) > DateTime.Now.Year)
-            {
-                anno = "1970";
-                mese = "01";
-            }
             return (anno, mese);
         }
     }
