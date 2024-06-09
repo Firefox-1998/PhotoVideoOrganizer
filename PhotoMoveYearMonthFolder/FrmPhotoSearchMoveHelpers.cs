@@ -75,10 +75,11 @@ public static string ReadExifUniqueImageID(string imagePath)
     }
 
     public static string ReadExifData(string imagePath)
-    {        
+    {
+        /*
         string fileName = Path.GetFileName(imagePath);
 
-        /*
+        
         // Prova a estrarre la data dal nome del file
         if (MyRegex().IsMatch(fileName))
         {
@@ -86,8 +87,7 @@ public static string ReadExifUniqueImageID(string imagePath)
             var year = match.Groups["year"].Value;
             var month = match.Groups["month"].Value;
             return year + month;
-        }
-        */
+        }        
 
         // Lista di tutti i formati di data possibili
         var formats = new[] { "yyyyMMdd", "yyyy-MM-dd", "ddMMyyyy", "dd-MM-yyyy", "MMddyyyy", "MM-dd-yyyy", "yyyyMM", "yyyy-MM", "MMyyyy", "MM-yyyy", "ddMMyy" };
@@ -100,6 +100,7 @@ public static string ReadExifUniqueImageID(string imagePath)
                 return date.ToString("yyyyMM01");
             }
         }
+        */
 
         string defaultDate = "19700101";
         try

@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Globalization;
+using Windows.Security.Authentication.Identity.Provider;
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -564,8 +566,13 @@ namespace PhotoMoveYearMonthFolder
                 }
             }
 
-            // Se nessuna corrispondenza viene trovata nel dizionario, eseguire l'azione predefinita
             if (!matchFound)
+            {
+                (anno, mese) = clsDateExtractor.ExtractYearMonth(nomeFile);
+            }
+
+            // Se nessuna corrispondenza viene trovata nel dizionario, eseguire l'azione predefinita
+            if (!matchFound && (int.Parse(anno) < 1970 || int.Parse(anno) > DateTime.Now.Year))
             {
                 string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
                 anno = parsedDate[..4];
