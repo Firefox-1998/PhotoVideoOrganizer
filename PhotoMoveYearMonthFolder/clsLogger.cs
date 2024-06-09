@@ -55,12 +55,12 @@ namespace PhotoMoveYearMonthFolder
 
             while (!logErrorMessages.IsEmpty)
             {
-                if (logErrorMessages.TryDequeue(out string? logErrorMessages))
+                if (logErrorMessages.TryDequeue(out string? logErrorMessage))
                 {
-                    if (logErrorMessages != null)
+                    if (logErrorMessage != null)
                     {
                         using StreamWriter writer = new(logErrorFilePath, append: true);
-                        writer.WriteLine(logErrorMessages);
+                        writer.WriteLine(logErrorMessage);
                     }
                 }
             }
