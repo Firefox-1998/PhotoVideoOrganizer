@@ -24,7 +24,7 @@ namespace PhotoMoveYearMonthFolder
             {"VideoCapture_", 13},
             {"IMG", 3},
             {"VID", 3},
-            {"WP_", 3}
+            {"WP_", 3},
         };
 
         public FrmPhotoSearchMove()
@@ -183,7 +183,7 @@ namespace PhotoMoveYearMonthFolder
             try
             {
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
-                (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile);
+                (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile, file);
 
                 /*
                 if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) ||
@@ -540,7 +540,7 @@ namespace PhotoMoveYearMonthFolder
             return invalidFiles;
         }
 
-        public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile)
+        public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile, string file)
         {
             string anno = string.Empty;
             string mese = string.Empty;
@@ -559,7 +559,7 @@ namespace PhotoMoveYearMonthFolder
                     }
                     catch (ArgumentOutOfRangeException)
                     {
-                        break; // Uscire dal ciclo a causa errore sulla lunghezza del nome file
+                        continue; // continua il ciclo a causa errore sulla lunghezza del nome file
                     }
                 }
             }
@@ -567,7 +567,7 @@ namespace PhotoMoveYearMonthFolder
             // Se nessuna corrispondenza viene trovata nel dizionario, eseguire l'azione predefinita
             if (!matchFound)
             {
-                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(nomeFile);
+                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
                 anno = parsedDate[..4];
                 mese = parsedDate[4..6];
             }

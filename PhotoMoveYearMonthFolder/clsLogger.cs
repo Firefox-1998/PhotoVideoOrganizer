@@ -42,7 +42,5 @@ namespace PhotoMoveYearMonthFolder
 
             }
         }
-
     }
-
 }
