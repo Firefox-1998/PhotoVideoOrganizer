@@ -39,7 +39,8 @@ namespace PhotoMoveYearMonthFolder
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
                 _cancellationTokenSource = new();
-                Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyLog.txt");
+                Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyAppLog.txt");
+                Logger.SetErrorFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyErrLog.txt");
                 tbMaxThread.Enabled = false;
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
@@ -53,6 +54,7 @@ namespace PhotoMoveYearMonthFolder
                     fileHashes = new();
                     // Processo i file con estensione valida jpg, jpeg, ecc
                     Logger.Log($">>> START VALID EXT<<<");
+                    Logger.LogError($">>> START VALID EXT<<<");
                     var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
                     //var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
                     var files = GetValidFiles(sSearchDir);
@@ -81,6 +83,7 @@ namespace PhotoMoveYearMonthFolder
 
                     await Task.WhenAll(tasks);                    
                     Logger.Log($">>> END VALID EXT <<<");
+                    Logger.LogError($">>> END VALID EXT <<<");
 
                     // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
@@ -93,7 +96,9 @@ namespace PhotoMoveYearMonthFolder
                         fileHashes = new();
                         pbProcessedOtherFiles.Maximum = numFiles;
                         Logger.Log($"\r\n---------------------------------\r\n");
+                        Logger.LogError($"\r\n---------------------------------\r\n");
                         Logger.Log($">>> START >> NOT << VALID EXT<<<");
+                        Logger.LogError($">>> START >> NOT << VALID EXT<<<");
                         tasks = files.Select((file, i) =>
                         {
                             var lblOtherFileNumProc = LblOtherFileProc;
@@ -114,6 +119,7 @@ namespace PhotoMoveYearMonthFolder
 
                         await Task.WhenAll(tasks);                        
                         Logger.Log($">>> END > NOT < VALID EXT <<<");
+                        Logger.LogError($">>> END > NOT < VALID EXT <<<");
                     }
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -121,7 +127,7 @@ namespace PhotoMoveYearMonthFolder
                 {
                     if (!_cancellationTokenSource.IsCancellationRequested)
                     {
-                        Logger.Log($">>> ERRORE: {ex.Message} <<<");
+                        Logger.LogError($">>> ERRORE: {ex.Message} <<<");
                         MessageBox.Show($"Si è verificato un errore: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -296,7 +302,7 @@ namespace PhotoMoveYearMonthFolder
             }
             catch (FormatException)
             {
-                Logger.Log($"Eccezione formato data {file}");
+                Logger.LogError($"Eccezione formato data {file}");
             }
             finally
             {
@@ -358,7 +364,7 @@ namespace PhotoMoveYearMonthFolder
             }
             catch (FormatException)
             {
-                Logger.Log($"Eccezione formato data {file}");
+                Logger.LogError($"Eccezione formato data {file}");
             }
             finally
             {
@@ -379,6 +385,8 @@ namespace PhotoMoveYearMonthFolder
             else
             {
                 Logger.Log($">>> EXIT <<<");
+                Logger.LogError($">>> EXIT <<<");
+
             }
         }
 
@@ -389,6 +397,8 @@ namespace PhotoMoveYearMonthFolder
             {
                 _cancellationTokenSource?.Cancel();
                 Logger.Log($">>> CANCEL REQUEST !!! <<<");
+                Logger.LogError($">>> CANCEL REQUEST !!! <<<");
+
                 Btn_Cancel.Enabled = false;
                 Btn_Cancel.Text = "CANCEL REQUEST\r\nWait...";
             }

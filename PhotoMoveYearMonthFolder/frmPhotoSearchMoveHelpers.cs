@@ -69,7 +69,7 @@ public static string ReadExifUniqueImageID(string imagePath)
         }
         catch (Exception ex)
         {
-            Logger.Log("Eccezione ReadExifData " + ex.Message + " " + imagePath);
+            Logger.LogError("Eccezione ReadExifData " + ex.Message + " " + imagePath);
         }
         return "";
     }
@@ -116,7 +116,7 @@ public static string ReadExifUniqueImageID(string imagePath)
         }
         catch (Exception ex)
         {
-            Logger.Log("Eccezione ReadExifData " + ex.Message + " " + imagePath);
+            Logger.LogError("Eccezione ReadExifData " + ex.Message + " " + imagePath);
         }
         return defaultDate;
     }
