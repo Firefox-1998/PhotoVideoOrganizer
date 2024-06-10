@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Globalization;
-using Windows.Security.Authentication.Identity.Provider;
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -45,7 +43,7 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
-                Btn_Cancel.Enabled = true;                
+                Btn_Cancel.Enabled = true;
                 isProcessing = true;
                 processedFiles = 0;
 
@@ -56,7 +54,6 @@ namespace PhotoMoveYearMonthFolder
                     Logger.Log($">>> START VALID EXT<<<");
                     Logger.LogError($">>> START VALID EXT<<<");
                     var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
-                    //var files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(FrmPhotoSearchMoveHelpers.IsValidFile).ToList();
                     var files = GetValidFiles(sSearchDir);
                     int numFiles = files.Count;
 
@@ -81,16 +78,15 @@ namespace PhotoMoveYearMonthFolder
                         }, _cancellationTokenSource.Token);
                     });
 
-                    await Task.WhenAll(tasks);                    
+                    await Task.WhenAll(tasks);
                     Logger.Log($">>> END VALID EXT <<<");
                     Logger.LogError($">>> END VALID EXT <<<");
 
                     // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
-                    //files = Directory.EnumerateFiles(sSearchDir, "*", SearchOption.AllDirectories).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)).ToList();                    
                     files = GetInvalidFiles(sSearchDir);
                     numFiles = files.Count;
-                    LblNumOtherFiles.Text = $"Num. altri file da processare: {numFiles}";                    
+                    LblNumOtherFiles.Text = $"Num. altri file da processare: {numFiles}";
                     if (numFiles != 0)
                     {
                         fileHashes = new();
@@ -117,7 +113,7 @@ namespace PhotoMoveYearMonthFolder
                             }, _cancellationTokenSource.Token);
                         });
 
-                        await Task.WhenAll(tasks);                        
+                        await Task.WhenAll(tasks);
                         Logger.Log($">>> END > NOT < VALID EXT <<<");
                         Logger.LogError($">>> END > NOT < VALID EXT <<<");
                     }
@@ -137,7 +133,7 @@ namespace PhotoMoveYearMonthFolder
                     LblNumFiles.Text = "-";
                     LblFileProc.Text = "-";
                     LblNumOtherFiles.Text = "-";
-                    LblOtherFileProc.Text = "-";    
+                    LblOtherFileProc.Text = "-";
                     pbProcessFiles.Value = 0;
                     pbProcessFiles.Maximum = 100;
                     pbProcessedOtherFiles.Value = 0;
@@ -192,52 +188,7 @@ namespace PhotoMoveYearMonthFolder
             {
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile, file);
-
-                /*
-                if (nomeFile.StartsWith("IMG-", StringComparison.OrdinalIgnoreCase) ||
-                    nomeFile.StartsWith("IMG_", StringComparison.OrdinalIgnoreCase) ||
-                    nomeFile.StartsWith("VID-", StringComparison.OrdinalIgnoreCase) ||
-                    nomeFile.StartsWith("AUD-", StringComparison.OrdinalIgnoreCase) ||
-                    nomeFile.StartsWith("PPT-", StringComparison.OrdinalIgnoreCase))
-                {
-                    anno = nomeFile[4..8];
-                    mese = nomeFile[8..10];
-                }
-                else
-                {
-                    if (nomeFile.StartsWith("Screenshot_", StringComparison.OrdinalIgnoreCase)) 
-                    {
-                        anno = nomeFile[11..15];
-                        mese = nomeFile[15..17];
-                    }
-                    else
-                    {
-                        if (nomeFile.StartsWith("VideoCapture_", StringComparison.OrdinalIgnoreCase))
-                        {
-                            anno = nomeFile[13..17];
-                            mese = nomeFile[17..19];
-                        }
-                        else
-                        {
-                            if (nomeFile.StartsWith("IMG", StringComparison.OrdinalIgnoreCase) ||
-                                nomeFile.StartsWith("VID", StringComparison.OrdinalIgnoreCase) ||
-                                nomeFile.StartsWith("WP_", StringComparison.OrdinalIgnoreCase)
-                                )
-                            {
-                                anno = nomeFile[3..7];
-                                mese = nomeFile[7..9];
-                            }
-                            else
-                            {
-                                string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
-                                anno = parsedDate[..4];
-                                mese = parsedDate[4..6];
-                            }
-                        }
-                    }
-                }
-                */
-
+                
                 string cartellaAnno = Path.Combine(sDestDir, anno);
                 Directory.CreateDirectory(cartellaAnno);
 
@@ -256,13 +207,13 @@ namespace PhotoMoveYearMonthFolder
                     destinationFileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
                 }
 
-                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) || 
+                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) ||
                     !string.IsNullOrEmpty(destinationFileUniqueImageID)) && fileUniqueImageID == destinationFileUniqueImageID;
 
                 if (!areFilesIdentical)
                 {
                     if (!sameUniqueImageID)
-                    { 
+                    {
                         if (fileExists)
                         {
                             // Calcola l'hash del file esistente
@@ -409,32 +360,6 @@ namespace PhotoMoveYearMonthFolder
             lblMaxThread.Text = "Max Thread: " + tbMaxThread.Value.ToString();
         }
 
-        /*
-        public static List<string> GetValidFiles(string rootPath)
-        {
-            var validFiles = new List<string>();
-
-            foreach (var directory in Directory.EnumerateDirectories(rootPath))
-            {
-                var directoryInfo = new DirectoryInfo(directory);
-
-                // Salta le directory di sistema o nascoste
-                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    continue;
-                }
-
-                // Aggiungi i file validi alla lista
-                validFiles.AddRange(Directory.EnumerateFiles(directory).Where(FrmPhotoSearchMoveHelpers.IsValidFile));
-
-                // Ricorsione nelle sottodirectory
-                validFiles.AddRange(GetValidFiles(directory));
-            }
-            return validFiles;
-        }
-        */
-
         public static List<string> GetValidFiles(string rootPath)
         {
             var validFiles = new List<string>();
@@ -462,59 +387,6 @@ namespace PhotoMoveYearMonthFolder
             return validFiles;
         }
 
-        /*
-        public static List<string> GetInvalidFiles(string rootPath)
-        {
-            var invalidFiles = new List<string>();
-
-            foreach (var directory in Directory.EnumerateDirectories(rootPath))
-            {
-                var directoryInfo = new DirectoryInfo(directory);
-
-                // Salta le directory di sistema o nascoste
-                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    continue;
-                }
-
-                // Aggiungi i file non validi alla lista
-                invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)));
-
-                // Ricorsione nelle sottodirectory
-                invalidFiles.AddRange(GetInvalidFiles(directory));
-            }
-            return invalidFiles;
-        }
-        
-
-        public static List<string> GetInvalidFiles(string rootPath)
-        {
-            var invalidFiles = new List<string>();
-
-            // Aggiungi i file non validi nella directory radice alla lista
-            invalidFiles.AddRange(Directory.EnumerateFiles(rootPath).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)));
-
-            foreach (var directory in Directory.EnumerateDirectories(rootPath))
-            {
-                var directoryInfo = new DirectoryInfo(directory);
-
-                // Salta le directory di sistema o nascoste
-                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    continue;
-                }
-
-                // Aggiungi i file non validi alla lista
-                invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file => !FrmPhotoSearchMoveHelpers.IsValidFile(file)));
-
-                // Ricorsione nelle sottodirectory
-                invalidFiles.AddRange(GetInvalidFiles(directory));
-            }
-            return invalidFiles;
-        }
-        */
         public static List<string> GetInvalidFiles(string rootPath)
         {
             var invalidFiles = new List<string>();
@@ -552,7 +424,6 @@ namespace PhotoMoveYearMonthFolder
                 // Ricorsione nelle sottodirectory
                 invalidFiles.AddRange(GetInvalidFiles(directory));
             }
-
             return invalidFiles;
         }
 
