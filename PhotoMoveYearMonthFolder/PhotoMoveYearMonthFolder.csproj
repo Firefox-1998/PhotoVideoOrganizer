@@ -6,12 +6,18 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Title>Photo/Video Copy And Divide Year/Month</Title>
+    <Title>Photo/Video Search Duplicate Copy And Divide Year/Month</Title>
     <Copyright>Firefox_1998 (C) 2024</Copyright>
     <PackageIcon>photography-icon.png</PackageIcon>
-    <Description>This program search photo, video and copy in destination path dividing the files by year and month of shooting </Description>
+    <Description>This program search "duplicates" photo, video and copy in destination path dividing the files by year and month of shooting </Description>
     <Platforms>AnyCPU;x64</Platforms>
+    <StartupObject>PhotoMoveYearMonthFolder.Program</StartupObject>
+    <ApplicationIcon>photography-icon-Windows.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="photography-icon-Windows.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\photography-icon.png">
