@@ -1,63 +1,57 @@
 ﻿using ExifLib;
 using PhotoMoveYearMonthFolder;
-using System.Globalization;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 
 internal static partial class FrmPhotoSearchMoveHelpers
 {
-//[GeneratedRegex(@"^(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})|^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})|^(?<day>\d{2})(?<month>\d{2})(?<year>\d{4})|^(?<day>\d{2})-(?<month>\d{2})-(?<year>\d{4})|^(?<month>\d{2})(?<day>\d{2})(?<year>\d{4})|^(?<month>\d{2})-(?<day>\d{2})-(?<year>\d{4})|^(?<year>\d{4})(?<month>\d{2})|^(?<year>\d{4})-(?<month>\d{2})|^(?<month>\d{2})(?<year>\d{4})|^(?<month>\d{2})-(?<year>\d{4})")]
-
-//private static partial Regex MyRegex();
-
-public static async Task CopyFileAsync(string sourceFile, string destinationFile)
-{
-    FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
-    var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
-    await sourceStream.CopyToAsync(destinationStream);
-}
-public static string ComputeHash(string file)
-{
-    using SHA256 sha256 = SHA256.Create();
-    byte[] hash1 = GetFileHash(sha256, file);
-    return BitConverter.ToString(value: hash1).Replace(" - ", string.Empty);
-}
-private static byte[] GetFileHash(SHA256 sha256, string path)
-{
-    FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-    return sha256.ComputeHash(stream);
-}
-public static string GenerateNewFileName(string filePath)
-{
-    string directory = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath));
-    string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
-    string fileExtension = Path.GetExtension(filePath);
-    int counter = 1;
-    string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
-    while (File.Exists(Path.Combine(directory, newFileName)))
+    public static async Task CopyFileAsync(string sourceFile, string destinationFile)
     {
-        counter++;
-        newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+        using FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
+        using var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
+        await sourceStream.CopyToAsync(destinationStream);
     }
-    return Path.Combine(directory, newFileName);
-}
-public static bool IsValidFile(string file)
-{
-    // Ottieni l'estensione del file
+    public static string ComputeHash(string file)
+    {
+        using SHA256 sha256 = SHA256.Create();
+        byte[] hash1 = GetFileHash(sha256, file);
+        return BitConverter.ToString(value: hash1).Replace(" - ", string.Empty);
+    }
+    private static byte[] GetFileHash(SHA256 sha256, string path)
+    {
+        using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return sha256.ComputeHash(stream);
+    }
+    public static string GenerateNewFileName(string filePath)
+    {
+        string directory = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath));
+        string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+        string fileExtension = Path.GetExtension(filePath);
+        int counter = 1;
+        string newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+        while (File.Exists(Path.Combine(directory, newFileName)))
+        {
+            counter++;
+            newFileName = $"{fileNameWithoutExtension}_{counter}{fileExtension}";
+        }
+        return Path.Combine(directory, newFileName);
+    }
+    public static bool IsValidFile(string file)
+    {
+        // Ottieni l'estensione del file
         string extension = Path.GetExtension(file).ToLower();
 
-    // Elenco di estensioni di file immagine
-        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4", ".mkv", ".opus", ".mp3", ".m4a"];
+        // Elenco di estensioni di file immagine
+        string[] validExtensions = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".mp4", ".mkv", ".opus", ".mp3", ".m4a", ".oga"];
 
-    // Restituisce true se l'estensione è presente nell'elenco
+        // Restituisce true se l'estensione è presente nell'elenco
         return validExtensions.Contains(extension);
-}
-public static string ReadExifUniqueImageID(string imagePath)
-{
-    try
+    }
+    public static string ReadExifUniqueImageID(string imagePath)
     {
-        using ExifReader reader = new(imagePath);
-        // Estrai il tag Image ID
+        try
+        {
+            using ExifReader reader = new(imagePath);
+            // Estrai il tag Image ID
             if (reader.GetTagValue(ExifTags.ImageUniqueID, out string imageID))
             {
                 return imageID;
@@ -76,39 +70,13 @@ public static string ReadExifUniqueImageID(string imagePath)
 
     public static string ReadExifData(string imagePath)
     {
-        /*
-        string fileName = Path.GetFileName(imagePath);
-
-        
-        // Prova a estrarre la data dal nome del file
-        if (MyRegex().IsMatch(fileName))
-        {
-            var match = MyRegex().Match(fileName);
-            var year = match.Groups["year"].Value;
-            var month = match.Groups["month"].Value;
-            return year + month;
-        }        
-
-        // Lista di tutti i formati di data possibili
-        var formats = new[] { "yyyyMMdd", "yyyy-MM-dd", "ddMMyyyy", "dd-MM-yyyy", "MMddyyyy", "MM-dd-yyyy", "yyyyMM", "yyyy-MM", "MMyyyy", "MM-yyyy", "ddMMyy" };
-
-        // Cerca ogni formato nella stringa
-        foreach (var format in formats)
-        {
-            if (DateTime.TryParseExact(fileName, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
-            {
-                return date.ToString("yyyyMM01");
-            }
-        }
-        */
-
         string defaultDate = "19700101";
         try
         {
             using ExifReader reader = new(imagePath);
 
             if (reader.GetTagValue(ExifTags.DateTimeDigitized, out DateTime datePictureTaken) ||
-                reader.GetTagValue(ExifTags.DateTimeOriginal, out datePictureTaken) || 
+                reader.GetTagValue(ExifTags.DateTimeOriginal, out datePictureTaken) ||
                 reader.GetTagValue(ExifTags.DateTime, out datePictureTaken))
             {
                 return datePictureTaken.ToString("yyyyMMdd");

@@ -48,8 +48,7 @@ namespace PhotoMoveYearMonthFolder
                 processedFiles = 0;
 
                 try
-                {
-                    /*
+                {                    
                     fileHashes = new();
                     // Processo i file con estensione valida jpg, jpeg, ecc
                     Logger.Log($">>> START VALID EXT<<<");
@@ -81,9 +80,9 @@ namespace PhotoMoveYearMonthFolder
 
                     await Task.WhenAll(tasks);
                     Logger.Log($">>> END VALID EXT <<<");
-                    Logger.LogError($">>> END VALID EXT <<<");
-                    */
+                    Logger.LogError($">>> END VALID EXT <<<");                    
 
+                    /*
                     fileHashes = new();
                     // Processo i file con estensione valida jpg, jpeg, ecc
                     Logger.Log($">>> START VALID EXT<<<");
@@ -117,8 +116,7 @@ namespace PhotoMoveYearMonthFolder
                     await Task.WhenAll(tasks);
                     Logger.Log($">>> END VALID EXT <<<");
                     Logger.LogError($">>> END VALID EXT <<<");
-
-
+                    */
 
                     // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
