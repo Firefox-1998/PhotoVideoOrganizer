@@ -60,40 +60,6 @@ namespace PhotoMoveYearMonthFolder
                     LblNumFiles.Text = $"Num. file da processare: {numFiles}";
                     pbProcessFiles.Maximum = numFiles;
 
-                    var tasks = files.Select((file, i) =>
-                    {
-                        var lblFileNumProc = LblFileProc;
-                        var progressbarNumFileProc = pbProcessFiles;
-                        return Task.Run(async () =>
-                        {
-                            await semaphore.WaitAsync(_cancellationTokenSource.Token);
-                            try
-                            {
-                                await ProcessFileAsync(file, lblFileNumProc, progressbarNumFileProc);
-                            }
-                            finally
-                            {
-                                semaphore.Release();
-                            }
-                        }, _cancellationTokenSource.Token);
-                    });
-
-                    await Task.WhenAll(tasks);
-                    Logger.Log($">>> END VALID EXT <<<");
-                    Logger.LogError($">>> END VALID EXT <<<");                    
-
-                    /*
-                    fileHashes = new();
-                    // Processo i file con estensione valida jpg, jpeg, ecc
-                    Logger.Log($">>> START VALID EXT<<<");
-                    Logger.LogError($">>> START VALID EXT<<<");
-                    var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
-                    var files = GetValidFiles(sSearchDir);
-                    int numFiles = files.Count;
-
-                    LblNumFiles.Text = $"Num. file da processare: {numFiles}";
-                    pbProcessFiles.Maximum = numFiles;
-
                     var partitioner = Partitioner.Create(files, true);
                     var tasks = partitioner.GetPartitions(tbMaxThread.Value).Select(partition =>
                         Task.Run(async () =>
@@ -116,7 +82,6 @@ namespace PhotoMoveYearMonthFolder
                     await Task.WhenAll(tasks);
                     Logger.Log($">>> END VALID EXT <<<");
                     Logger.LogError($">>> END VALID EXT <<<");
-                    */
 
                     // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
@@ -396,35 +361,6 @@ namespace PhotoMoveYearMonthFolder
             lblMaxThread.Text = "Max Thread: " + tbMaxThread.Value.ToString();
         }
 
-        /*
-        public static List<string> GetValidFiles(string rootPath)
-        {
-            var validFiles = new List<string>();
-
-            // Aggiungi i file validi nella directory radice alla lista
-            validFiles.AddRange(Directory.EnumerateFiles(rootPath).Where(FrmPhotoSearchMoveHelpers.IsValidFile));
-
-            foreach (var directory in Directory.EnumerateDirectories(rootPath))
-            {
-                var directoryInfo = new DirectoryInfo(directory);
-
-                // Salta le directory di sistema o nascoste
-                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    continue;
-                }
-
-                // Aggiungi i file validi alla lista
-                //validFiles.AddRange(Directory.EnumerateFiles(directory).Where(FrmPhotoSearchMoveHelpers.IsValidFile));
-
-                // Ricorsione nelle sottodirectory
-                validFiles.AddRange(GetValidFiles(directory));
-            }
-            return validFiles;
-        }
-        */
-
         public static List<string> GetValidFiles(string rootPath)
         {
             var directoryInfo = new DirectoryInfo(rootPath);
@@ -441,7 +377,6 @@ namespace PhotoMoveYearMonthFolder
                             .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
                             .ToList();
         }
-
 
         public static List<string> GetInvalidFiles(string rootPath)
         {

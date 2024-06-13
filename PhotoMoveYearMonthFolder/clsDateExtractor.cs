@@ -5,19 +5,19 @@ namespace PhotoMoveYearMonthFolder
     public static class clsDateExtractor
     {
         // Lista di tutti i formati di data possibili
-        private static readonly List<string> Formats = new List<string>
-    {
-        "yyyyMMdd",
-        "yyyy-MM-dd",
-        "ddMMyyyy",
-        "dd-MM-yyyy",
-        "MMddyyyy",
-        "MM-dd-yyyy",
-        "yyyyMM",
-        "yyyy-MM",
-        "MMyyyy",
-        "MM-yyyy"
-    };
+        private static readonly List<string> Formats =
+        [
+            "yyyyMMdd",
+            "yyyy-MM-dd",
+            "ddMMyyyy",
+            "dd-MM-yyyy",
+            "MMddyyyy",
+            "MM-dd-yyyy",
+            "yyyyMM",
+            "yyyy-MM",
+            "MMyyyy",
+            "MM-yyyy"
+        ];
 
         public static (string Year, string Month) ExtractYearMonth(string fileName)
         {

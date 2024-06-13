@@ -6,8 +6,8 @@ internal static partial class FrmPhotoSearchMoveHelpers
 {
     public static async Task CopyFileAsync(string sourceFile, string destinationFile)
     {
-        FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
-        var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
+        using FileStream sourceStream = new(sourceFile, FileMode.Open, FileAccess.Read);
+        using var destinationStream = new FileStream(destinationFile, FileMode.Create, FileAccess.Write);
         await sourceStream.CopyToAsync(destinationStream);
     }
     public static string ComputeHash(string file)
@@ -18,7 +18,7 @@ internal static partial class FrmPhotoSearchMoveHelpers
     }
     private static byte[] GetFileHash(SHA256 sha256, string path)
     {
-        FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         return sha256.ComputeHash(stream);
     }
     public static string GenerateNewFileName(string filePath)
