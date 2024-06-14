@@ -44,6 +44,7 @@
             pbProcessedOtherFiles = new ProgressBar();
             LblOtherFileProc = new Label();
             LblNumOtherFiles = new Label();
+            Btn_Exit = new Button();
             ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
@@ -89,7 +90,7 @@
             // 
             Btn_Start.Location = new Point(350, 111);
             Btn_Start.Name = "Btn_Start";
-            Btn_Start.Size = new Size(121, 44);
+            Btn_Start.Size = new Size(121, 24);
             Btn_Start.TabIndex = 4;
             Btn_Start.Text = "Start";
             Btn_Start.UseVisualStyleBackColor = true;
@@ -120,9 +121,9 @@
             // Btn_Cancel
             // 
             Btn_Cancel.Enabled = false;
-            Btn_Cancel.Location = new Point(350, 161);
+            Btn_Cancel.Location = new Point(350, 141);
             Btn_Cancel.Name = "Btn_Cancel";
-            Btn_Cancel.Size = new Size(121, 44);
+            Btn_Cancel.Size = new Size(121, 24);
             Btn_Cancel.TabIndex = 7;
             Btn_Cancel.Text = "Cancel";
             Btn_Cancel.UseVisualStyleBackColor = true;
@@ -138,28 +139,24 @@
             pbProcessFiles.TabIndex = 8;
             // 
             // tbMaxThread
-            //
-            //Leggo quanti processori logici ha la macchina
-            //e setto il numero di thread su quel valore
-            int coreCount = Environment.ProcessorCount;
+            // 
             tbMaxThread.Location = new Point(137, 111);
             tbMaxThread.Maximum = 20;
             tbMaxThread.Minimum = 1;
             tbMaxThread.Name = "tbMaxThread";
             tbMaxThread.Size = new Size(202, 45);
             tbMaxThread.TabIndex = 9;
-            tbMaxThread.Value = coreCount;
+            tbMaxThread.Value = 16;
             tbMaxThread.Scroll += TbMaxThread_Scroll;
             // 
             // lblMaxThread
             // 
-            
             lblMaxThread.BorderStyle = BorderStyle.FixedSingle;
             lblMaxThread.Location = new Point(12, 111);
             lblMaxThread.Name = "lblMaxThread";
             lblMaxThread.Size = new Size(102, 18);
             lblMaxThread.TabIndex = 10;
-            lblMaxThread.Text = "Max Thread: " + coreCount;
+            lblMaxThread.Text = "Max Thread: ";
             // 
             // pbProcessedOtherFiles
             // 
@@ -188,11 +185,23 @@
             LblNumOtherFiles.TabIndex = 12;
             LblNumOtherFiles.Text = "-";
             // 
+            // Btn_Exit
+            // 
+            Btn_Exit.Enabled = false;
+            Btn_Exit.Location = new Point(350, 171);
+            Btn_Exit.Name = "Btn_Exit";
+            Btn_Exit.Size = new Size(121, 24);
+            Btn_Exit.TabIndex = 14;
+            Btn_Exit.Text = "Exit";
+            Btn_Exit.UseVisualStyleBackColor = true;
+            Btn_Exit.Click += Btn_Exit_Click;
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(474, 300);
+            Controls.Add(Btn_Exit);
             Controls.Add(LblOtherFileProc);
             Controls.Add(LblNumOtherFiles);
             Controls.Add(pbProcessedOtherFiles);
@@ -236,5 +245,6 @@
         private ProgressBar pbProcessedOtherFiles;
         private Label LblOtherFileProc;
         private Label LblNumOtherFiles;
+        private Button Btn_Exit;
     }
 }

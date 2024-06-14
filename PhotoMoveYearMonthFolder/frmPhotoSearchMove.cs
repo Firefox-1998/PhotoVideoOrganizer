@@ -44,11 +44,12 @@ namespace PhotoMoveYearMonthFolder
                 Btn_DirSearch.Enabled = false;
                 Btn_Start.Enabled = false;
                 Btn_Cancel.Enabled = true;
+                Btn_Exit.Enabled = false;
                 isProcessing = true;
                 processedFiles = 0;
 
                 try
-                {                    
+                {
                     fileHashes = new();
                     // Processo i file con estensione valida jpg, jpeg, ecc
                     Logger.Log($">>> START VALID EXT<<<");
@@ -143,6 +144,7 @@ namespace PhotoMoveYearMonthFolder
                     Btn_DirDest.Enabled = true;
                     Btn_DirSearch.Enabled = true;
                     Btn_Start.Enabled = true;
+                    Btn_Exit.Enabled = true;
                     if (Btn_Cancel.Enabled)
                     {
                         Btn_Cancel.Enabled = false;
@@ -189,7 +191,7 @@ namespace PhotoMoveYearMonthFolder
             {
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile, file);
-                
+
                 string cartellaAnno = Path.Combine(sDestDir, anno);
                 Directory.CreateDirectory(cartellaAnno);
 
@@ -463,6 +465,11 @@ namespace PhotoMoveYearMonthFolder
             }
 
             return (anno, mese);
+        }
+
+        private void Btn_Exit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
