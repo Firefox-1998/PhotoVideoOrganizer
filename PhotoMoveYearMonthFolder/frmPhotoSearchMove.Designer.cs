@@ -138,24 +138,28 @@
             pbProcessFiles.TabIndex = 8;
             // 
             // tbMaxThread
-            // 
+            //
+            //Leggo quanti processori logici ha la macchina
+            //e setto il numero di thread su quel valore
+            int coreCount = Environment.ProcessorCount;
             tbMaxThread.Location = new Point(137, 111);
             tbMaxThread.Maximum = 20;
             tbMaxThread.Minimum = 1;
             tbMaxThread.Name = "tbMaxThread";
             tbMaxThread.Size = new Size(202, 45);
             tbMaxThread.TabIndex = 9;
-            tbMaxThread.Value = 10;
+            tbMaxThread.Value = coreCount;
             tbMaxThread.Scroll += TbMaxThread_Scroll;
             // 
             // lblMaxThread
             // 
+            
             lblMaxThread.BorderStyle = BorderStyle.FixedSingle;
             lblMaxThread.Location = new Point(12, 111);
             lblMaxThread.Name = "lblMaxThread";
             lblMaxThread.Size = new Size(102, 18);
             lblMaxThread.TabIndex = 10;
-            lblMaxThread.Text = "Max Thread: 10";
+            lblMaxThread.Text = "Max Thread: " + coreCount;
             // 
             // pbProcessedOtherFiles
             // 
