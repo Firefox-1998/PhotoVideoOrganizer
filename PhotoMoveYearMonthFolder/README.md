@@ -1,4 +1,4 @@
-# PhotoMoveYearMonthFolder
+# Photo/Video Organizer
 
 How many of you have thousands of photos scattered everywhere
 (cloud, folders, external hard drives, USB sticks, etc. etc.)? 
