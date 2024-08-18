@@ -469,6 +469,8 @@ namespace PhotoMoveYearMonthFolder
 
         private void Btn_Exit_Click(object sender, EventArgs e)
         {
+            Logger.Log($">>> EXIT <<<");
+            Logger.LogError($">>> EXIT <<<");
             Application.Exit();
         }
     }
