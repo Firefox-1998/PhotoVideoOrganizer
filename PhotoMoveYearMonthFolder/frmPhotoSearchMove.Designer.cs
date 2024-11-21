@@ -46,6 +46,7 @@
             LblNumOtherFiles = new Label();
             Btn_Exit = new Button();
             lblComment = new Label();
+            chkRootOnly = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
@@ -223,11 +224,22 @@
             lblComment.Text = "Photo/Video Search. Copy, without duplicates, And Organized to Year - Month";
             lblComment.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // chkRootOnly
+            // 
+            chkRootOnly.AutoSize = true;
+            chkRootOnly.Location = new Point(12, 141);
+            chkRootOnly.Name = "chkRootOnly";
+            chkRootOnly.Size = new Size(204, 19);
+            chkRootOnly.TabIndex = 16;
+            chkRootOnly.Text = "Search Image Selected Root Only";
+            chkRootOnly.UseVisualStyleBackColor = true;
+            // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(474, 322);
+            Controls.Add(chkRootOnly);
             Controls.Add(lblComment);
             Controls.Add(Btn_Exit);
             Controls.Add(LblOtherFileProc);
@@ -277,5 +289,6 @@
         private Label LblNumOtherFiles;
         private Button Btn_Exit;
         private Label lblComment;
+        private CheckBox chkRootOnly;
     }
 }

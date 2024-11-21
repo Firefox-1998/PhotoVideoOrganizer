@@ -45,6 +45,7 @@ namespace PhotoMoveYearMonthFolder
                 Btn_Start.Enabled = false;
                 Btn_Cancel.Enabled = true;
                 Btn_Exit.Enabled = false;
+                chkRootOnly.Enabled = false;
                 isProcessing = true;
                 processedFiles = 0;
 
@@ -55,7 +56,7 @@ namespace PhotoMoveYearMonthFolder
                     Logger.Log($">>> START VALID EXT<<<");
                     Logger.LogError($">>> START VALID EXT<<<");
                     var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
-                    var files = GetValidFiles(sSearchDir);
+                    var files = GetValidFiles(sSearchDir, chkRootOnly);
                     int numFiles = files.Count;
 
                     LblNumFiles.Text = $"Num. file da processare: {numFiles}";
@@ -86,7 +87,7 @@ namespace PhotoMoveYearMonthFolder
 
                     // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
                     // e li copio nella directory "OtherFilesExt"
-                    files = GetInvalidFiles(sSearchDir);
+                    files = GetInvalidFiles(sSearchDir, chkRootOnly);
                     numFiles = files.Count;
                     LblNumOtherFiles.Text = $"Num. altri file da processare: {numFiles}";
                     if (numFiles != 0)
@@ -145,6 +146,7 @@ namespace PhotoMoveYearMonthFolder
                     Btn_DirSearch.Enabled = true;
                     Btn_Start.Enabled = true;
                     Btn_Exit.Enabled = true;
+                    chkRootOnly.Enabled = true;
                     if (Btn_Cancel.Enabled)
                     {
                         Btn_Cancel.Enabled = false;
@@ -363,7 +365,7 @@ namespace PhotoMoveYearMonthFolder
             lblMaxThread.Text = "Max Thread: " + tbMaxThread.Value.ToString();
         }
 
-        public static List<string> GetValidFiles(string rootPath)
+        public static List<string> GetValidFiles(string rootPath, CheckBox cRootOnly)
         {
             var directoryInfo = new DirectoryInfo(rootPath);
 
@@ -374,49 +376,83 @@ namespace PhotoMoveYearMonthFolder
                 return [];
             }
 
-            // Ottieni tutti i file validi nella directory radice e nelle sue sottodirectory
-            return Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
-                            .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
-                            .ToList();
+            if (!cRootOnly.Checked)
+            {
+                // Ottieni tutti i file validi nella directory radice e nelle sue sottodirectory
+                return Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
+                                .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
+                                .ToList();
+            }
+            else
+            {
+                // Ottieni tutti i file validi nella directory radice e nelle sue sottodirectory
+                return Directory.EnumerateFiles(rootPath, "*.*", SearchOption.TopDirectoryOnly)
+                                .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
+                                .ToList();
+            }
         }
 
-        public static List<string> GetInvalidFiles(string rootPath)
+        public static List<string> GetInvalidFiles(string rootPath, CheckBox cRootOnly)
         {
             var invalidFiles = new List<string>();
 
-            foreach (var directory in Directory.EnumerateDirectories(rootPath))
+            // Controlla i file nella directory principale
+            invalidFiles.AddRange(Directory.EnumerateFiles(rootPath).Where(file =>
             {
-                var directoryInfo = new DirectoryInfo(directory);
+                var fileInfo = new FileInfo(file);
 
-                // Salta le directory di sistema o nascoste
-                if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                // Salta i file di sistema o nascosti
+                if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
+                    (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
+                    fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
+                    fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
+                    fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
                 {
-                    continue;
+                    return false;
                 }
 
-                // Aggiungi i file non validi alla lista
-                invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file =>
-                {
-                    var fileInfo = new FileInfo(file);
+                // Verifica se il file è valido
+                return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
+            }));
 
-                    // Salta i file di sistema o nascosti
-                    if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                        (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
-                        fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
-                        fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
-                        fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
+            // Se il checkbox non è selezionato, scansiona anche le sottodirectory
+            if (!cRootOnly.Checked)
+            {
+                foreach (var directory in Directory.EnumerateDirectories(rootPath))
+                {
+                    var directoryInfo = new DirectoryInfo(directory);
+
+                    // Salta le directory di sistema o nascoste
+                    if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
+                        (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
                     {
-                        return false;
+                        continue;
                     }
 
-                    // Verifica se il file è valido
-                    return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
-                }));
+                    // Aggiungi i file non validi alla lista
+                    invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file =>
+                    {
+                        var fileInfo = new FileInfo(file);
 
-                // Ricorsione nelle sottodirectory
-                invalidFiles.AddRange(GetInvalidFiles(directory));
+                        // Salta i file di sistema o nascosti
+                        if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
+                            (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
+                            fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
+                            fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
+                            fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
+                        {
+                            return false;
+                        }
+
+                        // Verifica se il file è valido
+                        return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
+                    }));
+
+                    // Ricorsione nelle sottodirectory
+                    invalidFiles.AddRange(GetInvalidFiles(directory, cRootOnly));
+                }
             }
+
             return invalidFiles;
         }
 
