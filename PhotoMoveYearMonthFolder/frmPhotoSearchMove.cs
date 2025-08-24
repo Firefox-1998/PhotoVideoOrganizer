@@ -5,7 +5,6 @@ namespace PhotoMoveYearMonthFolder
     public partial class FrmPhotoSearchMove : Form
     {
         private const string SuffixLogFile = "yyyyMMdd-HHmmss";
-        private readonly SemaphoreSlim semaphoreLock = new(1, 1);
         private string sSearchDir = "";
         private string sDestDir = "";
         private bool isProcessing;
@@ -37,8 +36,8 @@ namespace PhotoMoveYearMonthFolder
             if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
             {
                 _cancellationTokenSource = new();
-                Logger.SetLogFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyAppLog.txt");
-                Logger.SetErrorFilePath(sDestDir + "\\" + DateTime.Now.ToString(SuffixLogFile) + "_PhotoSearchCopyErrLog.txt");
+                Logger.SetLogFilePath(Path.Combine(sDestDir, $"{DateTime.Now.ToString(SuffixLogFile)}_PhotoSearchCopyAppLog.txt"));
+                Logger.SetErrorFilePath(Path.Combine(sDestDir, $"{DateTime.Now.ToString(SuffixLogFile)}_PhotoSearchCopyErrLog.txt"));
                 tbMaxThread.Enabled = false;
                 Btn_DirDest.Enabled = false;
                 Btn_DirSearch.Enabled = false;
@@ -48,19 +47,23 @@ namespace PhotoMoveYearMonthFolder
                 chkRootOnly.Enabled = false;
                 isProcessing = true;
                 processedFiles = 0;
+                processedOtherFiles = 0;
 
                 try
                 {
                     fileHashes = new();
-                    // Processo i file con estensione valida jpg, jpeg, ecc
-                    Logger.Log($">>> START VALID EXT<<<");
-                    Logger.LogError($">>> START VALID EXT<<<");
-                    var semaphore = new SemaphoreSlim(tbMaxThread.Value); // Imposta il numero massimo di thread in base a quanto definito dall'utente (MIN: 1 - MAX: 20)
+
+                    // Processo i file validi (immagini, video, audio) rilevati via sniff
+                    Logger.Log($">>> START VALID MEDIA <<<");
+                    Logger.LogError($">>> START VALID MEDIA <<<");
+
+                    var semaphore = new SemaphoreSlim(tbMaxThread.Value); // max concorrenza
                     var files = GetValidFiles(sSearchDir, chkRootOnly);
                     int numFiles = files.Count;
 
                     LblNumFiles.Text = $"Num. file da processare: {numFiles}";
                     pbProcessFiles.Maximum = numFiles;
+                    pbProcessFiles.Value = 0;
 
                     var partitioner = Partitioner.Create(files, true);
                     var tasks = partitioner.GetPartitions(tbMaxThread.Value).Select(partition =>
@@ -82,44 +85,43 @@ namespace PhotoMoveYearMonthFolder
                         }, _cancellationTokenSource.Token));
 
                     await Task.WhenAll(tasks);
-                    Logger.Log($">>> END VALID EXT <<<");
-                    Logger.LogError($">>> END VALID EXT <<<");
+                    Logger.Log($">>> END VALID MEDIA <<<");
+                    Logger.LogError($">>> END VALID MEDIA <<<");
 
-                    // Processo i file che "NON" hanno un'estensione valida jpg, jpeg, ecc.
-                    // e li copio nella directory "OtherFilesExt"
+                    // Processo gli altri file (non riconosciuti da sniff) nella cartella OtherFilesExt
                     files = GetInvalidFiles(sSearchDir, chkRootOnly);
-                    numFiles = files.Count;
-                    LblNumOtherFiles.Text = $"Num. altri file da processare: {numFiles}";
-                    if (numFiles != 0)
+                    int numOtherFiles = files.Count;
+                    LblNumOtherFiles.Text = $"Num. altri file da processare: {numOtherFiles}";
+                    if (numOtherFiles != 0)
                     {
                         fileHashes = new();
-                        pbProcessedOtherFiles.Maximum = numFiles;
+                        pbProcessedOtherFiles.Maximum = numOtherFiles;
+                        pbProcessedOtherFiles.Value = 0;
+
                         Logger.Log($"\r\n---------------------------------\r\n");
                         Logger.LogError($"\r\n---------------------------------\r\n");
-                        Logger.Log($">>> START >> NOT << VALID EXT<<<");
-                        Logger.LogError($">>> START >> NOT << VALID EXT<<<");
-                        tasks = files.Select((file, i) =>
-                        {
-                            var lblOtherFileNumProc = LblOtherFileProc;
-                            var progressbarNumOtherFileProc = pbProcessedOtherFiles;
-                            return Task.Run(async () =>
+                        Logger.Log($">>> START >> NOT << VALID MEDIA <<<");
+                        Logger.LogError($">>> START >> NOT << VALID MEDIA <<<");
+
+                        tasks = files.Select(file =>
+                            Task.Run(async () =>
                             {
                                 await semaphore.WaitAsync(_cancellationTokenSource.Token);
                                 try
                                 {
-                                    await ProcessFileAsyncNotValidExt(file, lblOtherFileNumProc, progressbarNumOtherFileProc);
+                                    await ProcessFileAsyncNotValidExt(file, LblOtherFileProc, pbProcessedOtherFiles);
                                 }
                                 finally
                                 {
                                     semaphore.Release();
                                 }
-                            }, _cancellationTokenSource.Token);
-                        });
+                            }, _cancellationTokenSource.Token));
 
                         await Task.WhenAll(tasks);
-                        Logger.Log($">>> END > NOT < VALID EXT <<<");
-                        Logger.LogError($">>> END > NOT < VALID EXT <<<");
+                        Logger.Log($">>> END > NOT < VALID MEDIA <<<");
+                        Logger.LogError($">>> END > NOT < VALID MEDIA <<<");
                     }
+
                     MessageBox.Show("Elaborazione completata!", "Informazioni", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
@@ -132,7 +134,7 @@ namespace PhotoMoveYearMonthFolder
                 }
                 finally
                 {
-                    _cancellationTokenSource.Dispose();
+                    _cancellationTokenSource?.Dispose();
                     LblNumFiles.Text = "-";
                     LblFileProc.Text = "-";
                     LblNumOtherFiles.Text = "-";
@@ -156,14 +158,12 @@ namespace PhotoMoveYearMonthFolder
                         Btn_Cancel.Text = "Cancel";
                     }
                     isProcessing = false;
+                    Logger.FlushNow();
                 }
             }
             else
             {
-                if (string.IsNullOrEmpty(sSearchDir) || string.IsNullOrEmpty(sDestDir) || sSearchDir.Equals(sDestDir))
-                {
-                    MessageBox.Show($"Verificare la corretezza delle directory di origine e destinazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
+                MessageBox.Show($"Verificare la corretezza delle directory di origine e destinazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -187,10 +187,16 @@ namespace PhotoMoveYearMonthFolder
 
         private async Task ProcessFileAsync(string file, Label lblFileNumProc, ProgressBar pbNumFilesProc)
         {
-
-            await semaphoreLock.WaitAsync();
             try
             {
+                // Deduplica concorrente: se l'hash è già visto, esci subito (niente EXIF/I-O extra)
+                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
+                if (!fileHashes.TryAdd(fileHash, 0))
+                {
+                    Logger.Log($"Saltato (hash già visto) {file}");
+                    return;
+                }
+
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(nomeFile, file);
 
@@ -201,59 +207,40 @@ namespace PhotoMoveYearMonthFolder
                 Directory.CreateDirectory(cartellaMese);
 
                 string destinazioneFile = Path.Combine(cartellaMese, nomeFile + Path.GetExtension(file));
-                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
-                bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
 
-                string fileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file);
-                string destinationFileUniqueImageID = "";
                 if (fileExists)
                 {
-                    destinationFileUniqueImageID = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
-                }
-
-                bool sameUniqueImageID = (!string.IsNullOrEmpty(fileUniqueImageID) ||
-                    !string.IsNullOrEmpty(destinationFileUniqueImageID)) && fileUniqueImageID == destinationFileUniqueImageID;
-
-                if (!areFilesIdentical)
-                {
-                    if (!sameUniqueImageID)
+                    // Confronto hash del file di destinazione
+                    string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+                    if (string.Equals(fileHash, existingFileHash, StringComparison.Ordinal))
                     {
-                        if (fileExists)
-                        {
-                            // Calcola l'hash del file esistente
-                            string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+                        Logger.Log($"Saltato {file} {destinazioneFile}");
+                        return;
+                    }
 
-                            if (fileHash != existingFileHash)
-                            {
-                                // I file sono diversi, quindi copia il file con un nuovo nome
-                                string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                                await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
-                                Logger.Log($"Copiato {file} {destinationFile}");
-                                fileHashes.TryAdd(fileHash, 0);
-                            }
-                            else
-                            {
-                                // I file sono identici, quindi salta la copia del file
-                                Logger.Log($"Saltato {file} {destinazioneFile}");
-                            }
-                        }
-                        else
+                    // EXIF solo per immagini e solo in caso di collisione di nome con contenuti diversi
+                    if (FrmPhotoSearchMoveHelpers.IsImageFileFast(file))
+                    {
+                        string srcId = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file);
+                        string dstId = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
+                        if (!string.IsNullOrEmpty(srcId) && !string.IsNullOrEmpty(dstId) && srcId == dstId)
                         {
-                            // Il file non esiste, quindi copia il file
-                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
-                            Logger.Log($"Copiato {file} {destinazioneFile}");
-                            fileHashes.TryAdd(fileHash, 0);
+                            Logger.Log($"Saltato. Stesso TAG EXIF 'ImageUniqueID' {file} {destinazioneFile}");
+                            return;
                         }
                     }
-                    else
-                    {
-                        Logger.Log($"Saltato. Stesso TAG EXIF 'ImageUniqueID' {file} {destinazioneFile}");
-                    }
+
+                    // Copia con nome unico atomica
+                    string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinationFile);
+                    Logger.Log($"Copiato {file} {written}");
                 }
                 else
                 {
-                    Logger.Log($"Saltato {file} {destinazioneFile}");
+                    // Copia con nome unico atomica anche qui per evitare race
+                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinazioneFile);
+                    Logger.Log($"Copiato {file} {written}");
                 }
             }
             catch (FormatException)
@@ -264,58 +251,47 @@ namespace PhotoMoveYearMonthFolder
             {
                 processedFiles = Interlocked.Increment(ref processedFiles);
                 lblFileNumProc.Invoke((Action)(() => lblFileNumProc.Text = $"Num. file processati: {processedFiles}"));
-                pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = processedFiles));
-
-                semaphoreLock.Release();
+                pbNumFilesProc.Invoke((Action)(() => pbNumFilesProc.Value = Math.Min(processedFiles, pbNumFilesProc.Maximum)));
             }
         }
 
         private async Task ProcessFileAsyncNotValidExt(string file, Label lblOtherFileNumProc, ProgressBar pbNumOtherFilesProc)
         {
-            await semaphoreLock.WaitAsync();
             try
             {
+                // Deduplica concorrente
+                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
+                if (!fileHashes.TryAdd(fileHash, 0))
+                {
+                    Logger.Log($"Saltato (hash già visto) {file}");
+                    return;
+                }
+
                 string nomeFile = Path.GetFileNameWithoutExtension(file);
                 string cartellaOtherExt = Path.Combine(sDestDir, "OtherFilesExt");
                 Directory.CreateDirectory(cartellaOtherExt);
 
                 string destinazioneFile = Path.Combine(cartellaOtherExt, nomeFile + Path.GetExtension(file));
-                string fileHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
                 bool fileExists = File.Exists(destinazioneFile);
-                bool areFilesIdentical = fileExists && fileHashes.ContainsKey(fileHash);
 
-                if (!areFilesIdentical)
+                if (fileExists)
                 {
-                    if (fileExists)
+                    string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
+                    if (string.Equals(fileHash, existingFileHash, StringComparison.Ordinal))
                     {
-                        // Calcola l'hash del file esistente
-                        string existingFileHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
-
-                        if (fileHash != existingFileHash)
-                        {
-                            // I file sono diversi, quindi copia il file con un nuovo nome
-                            string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                            await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinationFile);
-                            Logger.Log($"Copiato {file} {destinationFile}");
-                            fileHashes.TryAdd(fileHash, 0);
-                        }
-                        else
-                        {
-                            // I file sono identici, quindi salta la copia del file
-                            Logger.Log($"Saltato {file} {destinazioneFile}");
-                        }
+                        Logger.Log($"Saltato {file} {destinazioneFile}");
                     }
                     else
                     {
-                        // Il file non esiste, quindi copia il file
-                        await FrmPhotoSearchMoveHelpers.CopyFileAsync(file, destinazioneFile);
-                        Logger.Log($"Copiato {file} {destinazioneFile}");
-                        fileHashes.TryAdd(fileHash, 0);
+                        string destinationFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
+                        string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinationFile);
+                        Logger.Log($"Copiato {file} {written}");
                     }
                 }
                 else
                 {
-                    Logger.Log($"Saltato {file} {destinazioneFile}");
+                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinazioneFile);
+                    Logger.Log($"Copiato {file} {written}");
                 }
             }
             catch (FormatException)
@@ -326,14 +302,13 @@ namespace PhotoMoveYearMonthFolder
             {
                 processedOtherFiles = Interlocked.Increment(ref processedOtherFiles);
                 lblOtherFileNumProc.Invoke((Action)(() => lblOtherFileNumProc.Text = $"Num. file processati: {processedOtherFiles}"));
-                pbNumOtherFilesProc.Invoke((Action)(() => pbNumOtherFilesProc.Value = processedOtherFiles));
-                semaphoreLock.Release();
+                pbNumOtherFilesProc.Invoke((Action)(() => pbNumOtherFilesProc.Value = Math.Min(processedOtherFiles, pbNumOtherFilesProc.Maximum)));
             }
         }
 
         private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (isProcessing) // Controlla se ci sono task non completati e isProcessing è true
+            if (isProcessing)
             {
                 e.Cancel = true;
                 MessageBox.Show("Non è possibile chiudere la form durante l'elaborazione.", "Attenzione", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -342,7 +317,8 @@ namespace PhotoMoveYearMonthFolder
             {
                 Logger.Log($">>> EXIT <<<");
                 Logger.LogError($">>> EXIT <<<");
-
+                Logger.FlushNow();
+                Logger.Shutdown();
             }
         }
 
@@ -367,93 +343,92 @@ namespace PhotoMoveYearMonthFolder
 
         public static List<string> GetValidFiles(string rootPath, CheckBox cRootOnly)
         {
-            var directoryInfo = new DirectoryInfo(rootPath);
+            var results = new List<string>();
+            var root = new DirectoryInfo(rootPath);
 
-            // Salta le directory di sistema o nascoste
-            if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+            if ((root.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0)
+                return results;
+
+            void Scan(string dir)
             {
-                return [];
+                try
+                {
+                    foreach (var file in Directory.EnumerateFiles(dir))
+                    {
+                        try
+                        {
+                            if (FrmPhotoSearchMoveHelpers.IsValidMediaBySniff(file))
+                                results.Add(file);
+                        }
+                        catch { }
+                    }
+
+                    if (!cRootOnly.Checked)
+                    {
+                        foreach (var sub in Directory.EnumerateDirectories(dir))
+                        {
+                            try
+                            {
+                                var di = new DirectoryInfo(sub);
+                                if ((di.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0) continue;
+                                Scan(sub);
+                            }
+                            catch { }
+                        }
+                    }
+                }
+                catch { }
             }
 
-            if (!cRootOnly.Checked)
-            {
-                // Ottieni tutti i file validi nella directory radice e nelle sue sottodirectory
-                return Directory.EnumerateFiles(rootPath, "*.*", SearchOption.AllDirectories)
-                                .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
-                                .ToList();
-            }
-            else
-            {
-                // Ottieni tutti i file validi nella directory radice e nelle sue sottodirectory
-                return Directory.EnumerateFiles(rootPath, "*.*", SearchOption.TopDirectoryOnly)
-                                .Where(FrmPhotoSearchMoveHelpers.IsValidFile)
-                                .ToList();
-            }
+            Scan(rootPath);
+            return results;
         }
 
         public static List<string> GetInvalidFiles(string rootPath, CheckBox cRootOnly)
         {
-            var invalidFiles = new List<string>();
+            var results = new List<string>();
+            var root = new DirectoryInfo(rootPath);
 
-            // Controlla i file nella directory principale
-            invalidFiles.AddRange(Directory.EnumerateFiles(rootPath).Where(file =>
+            if ((root.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0)
+                return results;
+
+            void Scan(string dir)
             {
-                var fileInfo = new FileInfo(file);
-
-                // Salta i file di sistema o nascosti
-                if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                    (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
-                    fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
-                    fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
-                    fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
+                try
                 {
-                    return false;
-                }
-
-                // Verifica se il file è valido
-                return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
-            }));
-
-            // Se il checkbox non è selezionato, scansiona anche le sottodirectory
-            if (!cRootOnly.Checked)
-            {
-                foreach (var directory in Directory.EnumerateDirectories(rootPath))
-                {
-                    var directoryInfo = new DirectoryInfo(directory);
-
-                    // Salta le directory di sistema o nascoste
-                    if ((directoryInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                        (directoryInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    foreach (var file in Directory.EnumerateFiles(dir))
                     {
-                        continue;
+                        try
+                        {
+                            var fi = new FileInfo(file);
+                            if ((fi.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0) continue;
+                            if (fi.Extension is ".ini" or ".db" or ".com" or ".exe" or ".dll" or ".txt") continue;
+
+                            if (!FrmPhotoSearchMoveHelpers.IsValidMediaBySniff(file))
+                                results.Add(file);
+                        }
+                        catch { }
                     }
 
-                    // Aggiungi i file non validi alla lista
-                    invalidFiles.AddRange(Directory.EnumerateFiles(directory).Where(file =>
+                    if (!cRootOnly.Checked)
                     {
-                        var fileInfo = new FileInfo(file);
-
-                        // Salta i file di sistema o nascosti
-                        if ((fileInfo.Attributes & FileAttributes.System) == FileAttributes.System ||
-                            (fileInfo.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden ||
-                            fileInfo.Extension == ".ini" || fileInfo.Extension == ".db" ||
-                            fileInfo.Extension == ".com" || fileInfo.Extension == ".exe" ||
-                            fileInfo.Extension == ".dll" || fileInfo.Extension == ".txt")
+                        foreach (var sub in Directory.EnumerateDirectories(dir))
                         {
-                            return false;
+                            try
+                            {
+                                var di = new DirectoryInfo(sub);
+                                if ((di.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0) continue;
+                                Scan(sub);
+                            }
+                            catch { }
                         }
-
-                        // Verifica se il file è valido
-                        return !FrmPhotoSearchMoveHelpers.IsValidFile(file);
-                    }));
-
-                    // Ricorsione nelle sottodirectory
-                    invalidFiles.AddRange(GetInvalidFiles(directory, cRootOnly));
+                    }
                 }
+                catch { }
             }
 
-            return invalidFiles;
+            Scan(rootPath);
+            return results;
         }
 
         public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile, string file)
@@ -483,7 +458,7 @@ namespace PhotoMoveYearMonthFolder
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    // continua il ciclo a causa errore sulla lunghezza del nome file
+                    // continua
                 }
             }
 
@@ -494,7 +469,7 @@ namespace PhotoMoveYearMonthFolder
 
                 if (parsedYear < 1970 || parsedYear > DateTime.Now.Year)
                 {
-                    string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifData(file);
+                    string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifDataOrFileSystemDate(file);
                     anno = parsedDate[..4];
                     mese = parsedDate[4..6];
                 }
@@ -507,7 +482,18 @@ namespace PhotoMoveYearMonthFolder
         {
             Logger.Log($">>> EXIT <<<");
             Logger.LogError($">>> EXIT <<<");
+            Logger.FlushNow();
+            Logger.Shutdown();
             Application.Exit();
+        }
+
+        private void lblComment_Click(object sender, EventArgs e)
+        {
+            if (!isProcessing)
+            {
+                using FrmAbout about = new();
+                about.ShowDialog();
+            }
         }
     }
 }

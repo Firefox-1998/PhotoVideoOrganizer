@@ -158,7 +158,7 @@
             tbMaxThread.Name = "tbMaxThread";
             tbMaxThread.Size = new Size(202, 45);
             tbMaxThread.TabIndex = 9;
-            tbMaxThread.Value = 16;
+            tbMaxThread.Value = 4;
             tbMaxThread.Scroll += TbMaxThread_Scroll;
             // 
             // lblMaxThread
@@ -223,6 +223,7 @@
             lblComment.TabIndex = 15;
             lblComment.Text = "Photo/Video Search. Copy, without duplicates, And Organized to Year - Month";
             lblComment.TextAlign = ContentAlignment.MiddleCenter;
+            lblComment.Click += lblComment_Click;
             // 
             // chkRootOnly
             // 
