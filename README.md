@@ -28,8 +28,9 @@ The program organizes your media files by year and month, automatically discardi
 ---
 
 **Example output:**
-	Example:
-		search in folder 1 and folder 2
+```
+    Example:
+        search in folder 1 and folder 2
 		results
 		folder 3
 			1970  
@@ -57,9 +58,9 @@ The program organizes your media files by year and month, automatically discardi
 				02
 				03
 				04
-				05
-				
-	*(1970/01 is used when no valid date is found)*
+				05			
+```
+_(1970/01 is used when no valid date is found)_
 
 ---
 
@@ -110,6 +111,7 @@ Il programma organizza i file multimediali per anno e mese, scartando automatica
 ---
 
 **Esempio di risultato:**
+```
 	Example:
 		search in folder 1 and folder 2
 		results
@@ -140,8 +142,8 @@ Il programma organizza i file multimediali per anno e mese, scartando automatica
 				03
 				04
 				05
-
-	*(1970/01 viene usata quando non si trova una data valida)*
+```
+_(1970/01 viene usata quando non si trova una data valida)_
 
 ---
 
