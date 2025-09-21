@@ -223,7 +223,7 @@
             lblComment.TabIndex = 15;
             lblComment.Text = "Photo/Video Search. Copy, without duplicates, And Organized to Year - Month";
             lblComment.TextAlign = ContentAlignment.MiddleCenter;
-            lblComment.Click += lblComment_Click;
+            lblComment.Click += LblComment_Click;
             // 
             // chkRootOnly
             // 

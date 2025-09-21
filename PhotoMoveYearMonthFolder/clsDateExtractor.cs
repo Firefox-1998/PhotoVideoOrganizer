@@ -1,40 +1,46 @@
 ﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace PhotoMoveYearMonthFolder
 {
-    public static class clsDateExtractor
+    public static partial class ClsDateExtractor
     {
-        // Lista di tutti i formati di data possibili
-        private static readonly List<string> Formats =
+        // Regex per trovare sequenze numeriche che potrebbero essere date.
+        // Cerca numeri di 8 cifre, 6 cifre o formati con trattini.
+        [GeneratedRegex(@"\b(\d{8}|\d{6}|\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4}|\d{4}-\d{2}|\d{2}-\d{4})\b", RegexOptions.CultureInvariant)]
+        private static partial Regex DateRegex();
+
+        // Lista di formati di data da provare, ordinati per probabilità o specificità.
+        private static readonly string[] Formats =
         [
-            "yyyyMMdd",
-            "yyyy-MM-dd",
-            "ddMMyyyy",
-            "dd-MM-yyyy",
-            "MMddyyyy",
-            "MM-dd-yyyy",
-            "yyyyMM",
-            "yyyy-MM",
-            "MMyyyy",
+            // Formati a 8 cifre
+            "yyyyMMdd", "ddMMyyyy", "MMddyyyy",
+            // Formati con trattini
+            "yyyy-MM-dd", "dd-MM-yyyy", "MM-dd-yyyy",
+            // Formati a 6 cifre
+            "yyyyMM", "MMyyyy",
+            // Formati a 6 cifre con trattino
             "MM-yyyy"
         ];
 
         public static (string Year, string Month) ExtractYearMonth(string fileName)
         {
-            // Cerca ogni formato nella stringa
-            foreach (var format in Formats)
+            // Cerca tutte le corrispondenze della regex nel nome del file.
+            MatchCollection matches = DateRegex().Matches(fileName);
+            foreach (Match match in matches)
             {
-                for (int i = 0; i <= fileName.Length - format.Length; i++)
+                // Per ogni potenziale data trovata, prova a fare il parsing con i formati noti.
+                foreach (string format in Formats)
                 {
-                    var substring = fileName.Substring(i, format.Length);
-                    if (DateTime.TryParseExact(substring, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                    if (DateTime.TryParseExact(match.Value, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
                     {
+                        // Appena viene trovata una data valida, restituisci anno e mese.
                         return (date.ToString("yyyy"), date.ToString("MM"));
                     }
                 }
             }
 
-            // Se nessun formato corrisponde, restituisci null
+            // Se nessuna corrispondenza valida viene trovata, restituisci i valori di fallback.
             return ("9999", "99");
         }
     }
