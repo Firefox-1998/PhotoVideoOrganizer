@@ -10,13 +10,13 @@ namespace PhotoMoveYearMonthFolder
         {
             var ci = new CultureInfo(cultureName);
 
-            // Imposta culture di default per i nuovi thread e per il thread corrente
+            // Set default culture for new threads and for the current thread
             CultureInfo.DefaultThreadCurrentCulture = ci;
             CultureInfo.DefaultThreadCurrentUICulture = ci;
             Thread.CurrentThread.CurrentCulture = ci;
             Thread.CurrentThread.CurrentUICulture = ci;
 
-            // Notifica tutte le form sottoscritte
+            // Notify all subscribed forms
             CultureChanged?.Invoke(null, EventArgs.Empty);
         }
 

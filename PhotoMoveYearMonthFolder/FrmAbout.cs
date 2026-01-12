@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using PhotoMoveYearMonthFolder.Resources;
+using System.Reflection;
 
 namespace PhotoMoveYearMonthFolder
 {
@@ -8,16 +9,16 @@ namespace PhotoMoveYearMonthFolder
         {
             InitializeComponent();
 
-            // Sottoscrivi evento globale per aggiornare i testi quando cambia la cultura
+            // Subscribe to global event to update texts when culture changes
             LocalizationManager.CultureChanged += LocalizationManager_CultureChanged;
 
-            // Applica testi e info iniziali (valutate con CurrentUICulture corrente)
+            // Apply initial texts and info (evaluated with current CurrentUICulture)
             ApplyInfo();
         }
 
         private void LocalizationManager_CultureChanged(object? sender, EventArgs e)
         {
-            // Se chiamato da un thread diverso, usa Invoke per aggiornare la UI
+            // If called from a different thread, use Invoke to update the UI
             if (InvokeRequired)
             {
                 Invoke((Action)ApplyInfo);
@@ -37,7 +38,7 @@ namespace PhotoMoveYearMonthFolder
                 .FirstOrDefault(a => a.Key == "Developer")?.Value ?? About.ApplyInfo_MissingDeveloper;
             var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? About.ApplyInfo_MissingCopyright;
 
-            // Testi localizzati dalle risorse fortemente tipizzate (About.resx)
+            // Localized texts from strongly-typed resources (About.resx)
             lblTitle.Text = string.Format(About.ApplyInfo_ApplicationProductNameAbout, Application.ProductName);
             lblVersion.Text = string.Format(About.ApplyInfo_Version, version);
             lblAuthor.Text = string.Format(About.ApplyInfo_Developer, developer);
@@ -56,7 +57,7 @@ namespace PhotoMoveYearMonthFolder
         {
             if (disposing)
             {
-                // Rimuovi la sottoscrizione all'evento per evitare memory leak
+                // Unsubscribe from event to avoid memory leak
                 LocalizationManager.CultureChanged -= LocalizationManager_CultureChanged;
             }
             base.Dispose(disposing);

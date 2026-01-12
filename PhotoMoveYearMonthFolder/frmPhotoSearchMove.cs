@@ -1,3 +1,4 @@
+using PhotoMoveYearMonthFolder.Resources;
 using System.Collections.Concurrent;
 
 namespace PhotoMoveYearMonthFolder
@@ -30,13 +31,13 @@ namespace PhotoMoveYearMonthFolder
         {
             InitializeComponent();
 
-            // Sottoscrivi evento globale per aggiornare i testi quando cambia la cultura
+            // Subscribe to global event to update texts when culture changes
             LocalizationManager.CultureChanged += LocalizationManager_CultureChanged;
 
-            // Imposta lingua di default (English US)
+            // Set default language (English US)
             LocalizationManager.SetCultureByIndex(0);
 
-            // Seleziona voce nella combo (triggererà SelectedIndexChanged ma SetCulture è idempotente)
+            // Select combo box item (will trigger SelectedIndexChanged but SetCulture is idempotent)
             if (cmbLanguage.Items.Count > 0)
             {
                 cmbLanguage.SelectedIndex = 0;
@@ -57,7 +58,7 @@ namespace PhotoMoveYearMonthFolder
 
         private void UpdateTextsFromResources()
         {
-            // Riassegna i testi visibili dai resource properties (valutati con CurrentUICulture)
+            // Reassign visible texts from resource properties (evaluated with CurrentUICulture)
             Btn_DirDest.Text = PhotoSearchMove.FrmPhotoSearchMove_SelectDirectoryToImageCopy;
             Lbl_DirSearch.Text = string.IsNullOrEmpty(sSearchDir) 
                 ? PhotoSearchMove.FrmPhotoSearchMove_DirectorySearch 
@@ -112,7 +113,7 @@ namespace PhotoMoveYearMonthFolder
                         CancellationToken = _cancellationTokenSource.Token
                     };
 
-                    // Processo i file validi
+                    // Process valid files
                     LblNumFiles.Text = string.Format(PhotoSearchMove.Btn_Start_Click_NumFileProcessed, "0");
                     pbProcessFiles.Style = ProgressBarStyle.Marquee;
                     Logger.Log(Logging.Btn_Start_Click_STARTVALIDMEDIA);
@@ -124,7 +125,7 @@ namespace PhotoMoveYearMonthFolder
                     pbProcessFiles.Style = ProgressBarStyle.Blocks;
                     pbProcessFiles.Value = pbProcessFiles.Maximum;
 
-                    // Processo gli altri file
+                    // Process other files
                     processedFileKeys = new();
                     LblNumOtherFiles.Text = string.Format(PhotoSearchMove.Btn_Start_Click_NumOtherFileProcessed, "0");
                     pbProcessedOtherFiles.Style = ProgressBarStyle.Marquee;
@@ -446,7 +447,7 @@ namespace PhotoMoveYearMonthFolder
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    // continua
+                    // continue
                 }
             }
 

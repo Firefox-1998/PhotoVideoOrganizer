@@ -48,16 +48,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="About.resx">
+    <EmbeddedResource Update="Resources\About.resx">
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="FrmAbout.resx">
+    <EmbeddedResource Update="frmAbout.resx">
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Logging.resx">
+    <EmbeddedResource Update="Resources\Logging.resx">
       <Generator></Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="PhotoSearchMove.resx">
+    <EmbeddedResource Update="Resources\PhotoSearchMove.resx">
       <Generator></Generator>
     </EmbeddedResource>
   </ItemGroup>

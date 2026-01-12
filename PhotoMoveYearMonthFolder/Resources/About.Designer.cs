@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PhotoMoveYearMonthFolder {
+namespace PhotoMoveYearMonthFolder.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PhotoMoveYearMonthFolder {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PhotoMoveYearMonthFolder.About", typeof(About).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PhotoMoveYearMonthFolder.Resources.About", typeof(About).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
