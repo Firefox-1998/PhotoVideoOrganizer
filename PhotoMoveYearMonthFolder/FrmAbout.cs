@@ -7,7 +7,25 @@ namespace PhotoMoveYearMonthFolder
         public FrmAbout()
         {
             InitializeComponent();
+
+            // Sottoscrivi evento globale per aggiornare i testi quando cambia la cultura
+            LocalizationManager.CultureChanged += LocalizationManager_CultureChanged;
+
+            // Applica testi e info iniziali (valutate con CurrentUICulture corrente)
             ApplyInfo();
+        }
+
+        private void LocalizationManager_CultureChanged(object? sender, EventArgs e)
+        {
+            // Se chiamato da un thread diverso, usa Invoke per aggiornare la UI
+            if (InvokeRequired)
+            {
+                Invoke((Action)ApplyInfo);
+            }
+            else
+            {
+                ApplyInfo();
+            }
         }
 
         private void ApplyInfo()
@@ -16,21 +34,32 @@ namespace PhotoMoveYearMonthFolder
             var description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description ?? "";
             var version = assembly.GetName().Version?.ToString() ?? "";
             var developer = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(a => a.Key == "Developer")?.Value ?? "Unknown Developer";
-            var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? "Copyright ©";
+                .FirstOrDefault(a => a.Key == "Developer")?.Value ?? About.ApplyInfo_MissingDeveloper;
+            var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? About.ApplyInfo_MissingCopyright;
 
-
-            lblTitle.Text = $"📸 {Application.ProductName} - About";
-            lblVersion.Text = $"🛠️ Version: {version}";
-            lblAuthor.Text = $"👨‍💻 Developer: {developer}";
+            // Testi localizzati dalle risorse fortemente tipizzate (About.resx)
+            lblTitle.Text = string.Format(About.ApplyInfo_ApplicationProductNameAbout, Application.ProductName);
+            lblVersion.Text = string.Format(About.ApplyInfo_Version, version);
+            lblAuthor.Text = string.Format(About.ApplyInfo_Developer, developer);
             lblCopyright.Text = $"{copyright}";
-            lblLicense.Text = $"📄 License: MIT";
+            lblLicense.Text = About.ApplyInfo_License;
             lblDescription.Text = $"📝 {description}";
+            btnClose.Text = About.ApplyInfo_Close;
         }
 
-        private void btnClose_Click(object sender, EventArgs e)
+        private void BtnClose_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Rimuovi la sottoscrizione all'evento per evitare memory leak
+                LocalizationManager.CultureChanged -= LocalizationManager_CultureChanged;
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -12,7 +12,6 @@
     <Description>This program search "duplicates" photo, video and copy in destination path dividing the files by year and month of shooting</Description>
     <Platforms>x64</Platforms>
     <StartupObject>PhotoMoveYearMonthFolder.Program</StartupObject>
-    <ApplicationIcon>photography-icon-Windows.ico</ApplicationIcon>
     <AssemblyTitle>PhotoMoveYearMonthFolder</AssemblyTitle>
     <AssemblyCompany>G.L. aka Firefox_1998</AssemblyCompany>
     <AssemblyProduct>PhotoMoveYearMonthFolder</AssemblyProduct>
@@ -21,6 +20,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Firefox-1998/PhotoVideoOrganizer</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <ApplicationIcon>photography-icon-Windows.ico</ApplicationIcon>
 
   </PropertyGroup>
 
@@ -45,6 +45,21 @@
 
   <ItemGroup>
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="About.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="FrmAbout.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Logging.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="PhotoSearchMove.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Target Name="SetVersion" BeforeTargets="BeforeBuild">

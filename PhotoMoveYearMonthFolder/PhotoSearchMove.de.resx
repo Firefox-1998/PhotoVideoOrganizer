@@ -117,4 +117,67 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="TbMaxThread_Scroll_MaxThread" xml:space="preserve">
+    <value>Maximaler Thread: </value>
+  </data>
+  <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
+    <value>ANFRAGE ABBRECHEN\r\nWarten...</value>
+  </data>
+  <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
+    <value>Num. der verarbeiteten Dateien: {0}</value>
+  </data>
+  <data name="Btn_Start_Click_NumOtherFileProcessed" xml:space="preserve">
+    <value>Num. andere Datei verarbeitet: {0}";</value>
+  </data>
+  <data name="Btn_Start_Click_ElaborazioneCompletata" xml:space="preserve">
+    <value>Bearbeitung abgeschlossen!</value>
+  </data>
+  <data name="Btn_Start_Click_Informazioni" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="Btn_Start_Click_ElaborazioneAnnullataDallUtente" xml:space="preserve">
+    <value>Verarbeitung durch den Benutzer abgebrochen.</value>
+  </data>
+  <data name="Btn_Start_Click_Annullato" xml:space="preserve">
+    <value>Abgesagt.</value>
+  </data>
+  <data name="Btn_Cancel_Click_StopProcessing" xml:space="preserve">
+    <value>Bestätigen Sie, dass Sie die Verarbeitung stoppen möchten?</value>
+  </data>
+  <data name="FrmPhotoSearchMove_FormClosing_CannotBeClosedWhileProcessingIsInProgress" xml:space="preserve">
+    <value>Das Formular kann während der Verarbeitung nicht geschlossen werden.</value>
+  </data>
+  <data name="FrmPhotoSearchMove_FormClosing_Warning" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="Btn_Start_Click_PleaseVerifyDirectoriesAreCorrect" xml:space="preserve">
+    <value>Bitte überprüfen Sie, ob die Quell- und Zielverzeichnisse korrekt sind.</value>
+  </data>
+  <data name="FrmPhotoSearchMove_DirectorySearch" xml:space="preserve">
+    <value>Verzeichnissuche</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SelectDirectoryToImageSearch" xml:space="preserve">
+    <value>Wählen Sie „Verzeichnis zur Bildsuche“.</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Cancel" xml:space="preserve">
+    <value>Stornieren</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Start" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="FrmPhotoSearchMove_DirectoryDestination" xml:space="preserve">
+    <value>Verzeichnisziel</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Exit" xml:space="preserve">
+    <value>Ausfahrt</value>
+  </data>
+  <data name="FrmPhotoSearchMove_lblComment" xml:space="preserve">
+    <value>Foto-/Videosuche. Kopieren, ohne Duplikate und organisiert nach Jahr – Monat</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SearchImageSelectedRootOnly" xml:space="preserve">
+    <value>Nur ausgewähltes Stammverzeichnis durchsuchen</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SelectDirectoryToImageCopy" xml:space="preserve">
+    <value>Wählen Sie „Verzeichnis zum Kopieren des Bildes“.</value>
+  </data>
 </root>

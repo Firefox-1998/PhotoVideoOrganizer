@@ -7,19 +7,6 @@
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -47,59 +34,60 @@
             Btn_Exit = new Button();
             lblComment = new Label();
             chkRootOnly = new CheckBox();
+            cmbLanguage = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
             // Lbl_DirSearch
             // 
             Lbl_DirSearch.BorderStyle = BorderStyle.FixedSingle;
-            Lbl_DirSearch.Location = new Point(12, 24);
+            Lbl_DirSearch.Location = new Point(12, 33);
             Lbl_DirSearch.Margin = new Padding(4, 0, 4, 0);
             Lbl_DirSearch.Name = "Lbl_DirSearch";
             Lbl_DirSearch.Size = new Size(328, 18);
             Lbl_DirSearch.TabIndex = 0;
-            Lbl_DirSearch.Text = "Directory Search";
+            Lbl_DirSearch.Text = "DS";
             // 
             // Btn_DirSearch
             // 
-            Btn_DirSearch.Location = new Point(350, 12);
+            Btn_DirSearch.Location = new Point(350, 9);
             Btn_DirSearch.Margin = new Padding(4, 3, 4, 3);
             Btn_DirSearch.Name = "Btn_DirSearch";
-            Btn_DirSearch.Size = new Size(121, 44);
+            Btn_DirSearch.Size = new Size(120, 60);
             Btn_DirSearch.TabIndex = 1;
-            Btn_DirSearch.Text = "Select Directory To Image Search";
+            Btn_DirSearch.Text = "SDTIS";
             Btn_DirSearch.UseVisualStyleBackColor = true;
             Btn_DirSearch.Click += Btn_DirSearch_Click;
             // 
             // Lbl_DirDestination
             // 
             Lbl_DirDestination.BorderStyle = BorderStyle.FixedSingle;
-            Lbl_DirDestination.Location = new Point(12, 73);
+            Lbl_DirDestination.Location = new Point(12, 92);
             Lbl_DirDestination.Margin = new Padding(4, 0, 4, 0);
             Lbl_DirDestination.Name = "Lbl_DirDestination";
             Lbl_DirDestination.Size = new Size(328, 18);
             Lbl_DirDestination.TabIndex = 2;
-            Lbl_DirDestination.Text = "Directory Destination";
+            Lbl_DirDestination.Text = "DD";
             // 
             // Btn_DirDest
             // 
-            Btn_DirDest.Location = new Point(350, 59);
+            Btn_DirDest.Location = new Point(350, 70);
             Btn_DirDest.Margin = new Padding(4, 3, 4, 3);
             Btn_DirDest.Name = "Btn_DirDest";
-            Btn_DirDest.Size = new Size(121, 44);
+            Btn_DirDest.Size = new Size(120, 60);
             Btn_DirDest.TabIndex = 3;
-            Btn_DirDest.Text = "Select Directory To Image Copy";
+            Btn_DirDest.Text = "SDTIC";
             Btn_DirDest.UseVisualStyleBackColor = true;
             Btn_DirDest.Click += Btn_DirDest_Click;
             // 
             // Btn_Start
             // 
-            Btn_Start.Location = new Point(350, 111);
+            Btn_Start.Location = new Point(350, 132);
             Btn_Start.Margin = new Padding(4, 3, 4, 3);
             Btn_Start.Name = "Btn_Start";
-            Btn_Start.Size = new Size(121, 24);
+            Btn_Start.Size = new Size(120, 24);
             Btn_Start.TabIndex = 4;
-            Btn_Start.Text = "Start";
+            Btn_Start.Text = "St";
             Btn_Start.UseVisualStyleBackColor = true;
             Btn_Start.Click += Btn_Start_Click;
             // 
@@ -110,7 +98,7 @@
             // LblNumFiles
             // 
             LblNumFiles.AutoSize = true;
-            LblNumFiles.Location = new Point(12, 190);
+            LblNumFiles.Location = new Point(12, 209);
             LblNumFiles.Margin = new Padding(4, 0, 4, 0);
             LblNumFiles.Name = "LblNumFiles";
             LblNumFiles.Size = new Size(11, 15);
@@ -120,7 +108,7 @@
             // LblFileProc
             // 
             LblFileProc.AutoSize = true;
-            LblFileProc.Location = new Point(192, 190);
+            LblFileProc.Location = new Point(192, 209);
             LblFileProc.Margin = new Padding(4, 0, 4, 0);
             LblFileProc.Name = "LblFileProc";
             LblFileProc.Size = new Size(11, 15);
@@ -130,18 +118,18 @@
             // Btn_Cancel
             // 
             Btn_Cancel.Enabled = false;
-            Btn_Cancel.Location = new Point(350, 141);
+            Btn_Cancel.Location = new Point(350, 160);
             Btn_Cancel.Margin = new Padding(4, 3, 4, 3);
             Btn_Cancel.Name = "Btn_Cancel";
-            Btn_Cancel.Size = new Size(121, 24);
+            Btn_Cancel.Size = new Size(120, 24);
             Btn_Cancel.TabIndex = 7;
-            Btn_Cancel.Text = "Cancel";
+            Btn_Cancel.Text = "Ca";
             Btn_Cancel.UseVisualStyleBackColor = true;
             Btn_Cancel.Click += Btn_Cancel_Click;
             // 
             // pbProcessFiles
             // 
-            pbProcessFiles.Location = new Point(10, 218);
+            pbProcessFiles.Location = new Point(10, 237);
             pbProcessFiles.Margin = new Padding(4, 3, 4, 3);
             pbProcessFiles.Name = "pbProcessFiles";
             pbProcessFiles.Size = new Size(451, 22);
@@ -151,12 +139,12 @@
             // 
             // tbMaxThread
             // 
-            tbMaxThread.Location = new Point(136, 111);
+            tbMaxThread.Location = new Point(173, 130);
             tbMaxThread.Margin = new Padding(4, 3, 4, 3);
             tbMaxThread.Maximum = 20;
             tbMaxThread.Minimum = 1;
             tbMaxThread.Name = "tbMaxThread";
-            tbMaxThread.Size = new Size(202, 45);
+            tbMaxThread.Size = new Size(165, 45);
             tbMaxThread.TabIndex = 9;
             tbMaxThread.Value = 4;
             tbMaxThread.Scroll += TbMaxThread_Scroll;
@@ -164,16 +152,16 @@
             // lblMaxThread
             // 
             lblMaxThread.BorderStyle = BorderStyle.FixedSingle;
-            lblMaxThread.Location = new Point(12, 111);
+            lblMaxThread.Location = new Point(12, 130);
             lblMaxThread.Margin = new Padding(4, 0, 4, 0);
             lblMaxThread.Name = "lblMaxThread";
-            lblMaxThread.Size = new Size(102, 18);
+            lblMaxThread.Size = new Size(153, 18);
             lblMaxThread.TabIndex = 10;
-            lblMaxThread.Text = "Max Thread: ";
+            lblMaxThread.Text = "MT";
             // 
             // pbProcessedOtherFiles
             // 
-            pbProcessedOtherFiles.Location = new Point(10, 270);
+            pbProcessedOtherFiles.Location = new Point(10, 289);
             pbProcessedOtherFiles.Margin = new Padding(4, 3, 4, 3);
             pbProcessedOtherFiles.Name = "pbProcessedOtherFiles";
             pbProcessedOtherFiles.Size = new Size(451, 22);
@@ -184,7 +172,7 @@
             // LblOtherFileProc
             // 
             LblOtherFileProc.AutoSize = true;
-            LblOtherFileProc.Location = new Point(192, 249);
+            LblOtherFileProc.Location = new Point(192, 268);
             LblOtherFileProc.Margin = new Padding(4, 0, 4, 0);
             LblOtherFileProc.Name = "LblOtherFileProc";
             LblOtherFileProc.Size = new Size(11, 15);
@@ -194,7 +182,7 @@
             // LblNumOtherFiles
             // 
             LblNumOtherFiles.AutoSize = true;
-            LblNumOtherFiles.Location = new Point(12, 249);
+            LblNumOtherFiles.Location = new Point(12, 268);
             LblNumOtherFiles.Margin = new Padding(4, 0, 4, 0);
             LblNumOtherFiles.Name = "LblNumOtherFiles";
             LblNumOtherFiles.Size = new Size(11, 15);
@@ -204,42 +192,54 @@
             // Btn_Exit
             // 
             Btn_Exit.Enabled = false;
-            Btn_Exit.Location = new Point(350, 171);
+            Btn_Exit.Location = new Point(350, 188);
             Btn_Exit.Margin = new Padding(4, 3, 4, 3);
             Btn_Exit.Name = "Btn_Exit";
-            Btn_Exit.Size = new Size(121, 24);
+            Btn_Exit.Size = new Size(120, 24);
             Btn_Exit.TabIndex = 14;
-            Btn_Exit.Text = "Exit";
+            Btn_Exit.Text = "E";
             Btn_Exit.UseVisualStyleBackColor = true;
             Btn_Exit.Click += Btn_Exit_Click;
             // 
             // lblComment
             // 
             lblComment.Font = new Font("Calibri", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 178);
-            lblComment.Location = new Point(6, 296);
+            lblComment.Location = new Point(6, 315);
             lblComment.Margin = new Padding(4, 0, 4, 0);
             lblComment.Name = "lblComment";
             lblComment.Size = new Size(461, 24);
             lblComment.TabIndex = 15;
-            lblComment.Text = "Photo/Video Search. Copy, without duplicates, And Organized to Year - Month";
+            lblComment.Text = "PV";
             lblComment.TextAlign = ContentAlignment.MiddleCenter;
             lblComment.Click += LblComment_Click;
             // 
             // chkRootOnly
             // 
             chkRootOnly.AutoSize = true;
-            chkRootOnly.Location = new Point(12, 141);
+            chkRootOnly.Location = new Point(12, 165);
             chkRootOnly.Name = "chkRootOnly";
-            chkRootOnly.Size = new Size(204, 19);
+            chkRootOnly.Size = new Size(58, 19);
             chkRootOnly.TabIndex = 16;
-            chkRootOnly.Text = "Search Image Selected Root Only";
+            chkRootOnly.Text = "SISRO";
             chkRootOnly.UseVisualStyleBackColor = true;
+            // 
+            // cmbLanguage
+            // 
+            cmbLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbLanguage.FormattingEnabled = true;
+            cmbLanguage.Items.AddRange(new object[] { "English (US)", "Italiano", "Français", "Deutsch" });
+            cmbLanguage.Location = new Point(12, 4);
+            cmbLanguage.Name = "cmbLanguage";
+            cmbLanguage.Size = new Size(200, 23);
+            cmbLanguage.TabIndex = 17;
+            cmbLanguage.SelectedIndexChanged += CmbLanguage_SelectedIndexChanged;
             // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 322);
+            ClientSize = new Size(474, 341);
+            Controls.Add(cmbLanguage);
             Controls.Add(chkRootOnly);
             Controls.Add(lblComment);
             Controls.Add(Btn_Exit);
@@ -291,5 +291,6 @@
         private Button Btn_Exit;
         private Label lblComment;
         private CheckBox chkRootOnly;
+        private ComboBox cmbLanguage;
     }
 }

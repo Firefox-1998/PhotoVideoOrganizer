@@ -117,4 +117,67 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="TbMaxThread_Scroll_MaxThread" xml:space="preserve">
+    <value>Thread massimi: </value>
+  </data>
+  <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
+    <value>ANNULLA RICHIESTA\r\nAttendere...</value>
+  </data>
+  <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
+    <value>Num. di file elaborati: {0}</value>
+  </data>
+  <data name="Btn_Start_Click_NumOtherFileProcessed" xml:space="preserve">
+    <value>Num. altro file elaborato: {0}";</value>
+  </data>
+  <data name="Btn_Start_Click_ElaborazioneCompletata" xml:space="preserve">
+    <value>Elaborazione completata!</value>
+  </data>
+  <data name="Btn_Start_Click_Informazioni" xml:space="preserve">
+    <value>Informazioni</value>
+  </data>
+  <data name="Btn_Start_Click_ElaborazioneAnnullataDallUtente" xml:space="preserve">
+    <value>Elaborazione annullata dall'utente.</value>
+  </data>
+  <data name="Btn_Start_Click_Annullato" xml:space="preserve">
+    <value>Annullato.</value>
+  </data>
+  <data name="Btn_Cancel_Click_StopProcessing" xml:space="preserve">
+    <value>Confermi di voler interrompere l'elaborazione?</value>
+  </data>
+  <data name="FrmPhotoSearchMove_FormClosing_CannotBeClosedWhileProcessingIsInProgress" xml:space="preserve">
+    <value>Non è possibile chiudere il modulo mentre è in corso l'elaborazione.</value>
+  </data>
+  <data name="FrmPhotoSearchMove_FormClosing_Warning" xml:space="preserve">
+    <value>Attenzione</value>
+  </data>
+  <data name="Btn_Start_Click_PleaseVerifyDirectoriesAreCorrect" xml:space="preserve">
+    <value>Verifica che le directory di origine e di destinazione siano corrette.</value>
+  </data>
+  <data name="FrmPhotoSearchMove_DirectorySearch" xml:space="preserve">
+    <value>Ricerca nella directory</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SelectDirectoryToImageSearch" xml:space="preserve">
+    <value>Seleziona Directory in cui cercare immagini</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Cancel" xml:space="preserve">
+    <value>Cancellare</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Start" xml:space="preserve">
+    <value>Inizio</value>
+  </data>
+  <data name="FrmPhotoSearchMove_DirectoryDestination" xml:space="preserve">
+    <value>Directory Destinazione</value>
+  </data>
+  <data name="FrmPhotoSearchMove_Exit" xml:space="preserve">
+    <value>Uscita</value>
+  </data>
+  <data name="FrmPhotoSearchMove_lblComment" xml:space="preserve">
+    <value>Ricerca foto/video. Copia, senza duplicati, e organizzata per anno - mese</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SearchImageSelectedRootOnly" xml:space="preserve">
+    <value>Cerca immagini solo nella dir. radice selezionata</value>
+  </data>
+  <data name="FrmPhotoSearchMove_SelectDirectoryToImageCopy" xml:space="preserve">
+    <value>Selezionare Directory dove copiare immagini</value>
+  </data>
 </root>

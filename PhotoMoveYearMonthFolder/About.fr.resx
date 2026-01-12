@@ -117,4 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ApplyInfo_Close" xml:space="preserve">
+    <value>✨Fermer ✨</value>
+  </data>
+  <data name="ApplyInfo_ApplicationProductNameAbout" xml:space="preserve">
+    <value>📸 {0} - À propos</value>
+  </data>
+  <data name="ApplyInfo_Version" xml:space="preserve">
+    <value>🛠️Version : {0}</value>
+  </data>
+  <data name="ApplyInfo_Developer" xml:space="preserve">
+    <value>👨‍💻 Développeur : {0}</value>
+  </data>
+  <data name="ApplyInfo_License" xml:space="preserve">
+    <value>📄 Licence : MIT</value>
+  </data>
+  <data name="ApplyInfo_MissingDeveloper" xml:space="preserve">
+    <value>Développeur Firefox1998</value>
+  </data>
+  <data name="ApplyInfo_MissingCopyright" xml:space="preserve">
+    <value>Droits d'auteur ©</value>
+  </data>
 </root>

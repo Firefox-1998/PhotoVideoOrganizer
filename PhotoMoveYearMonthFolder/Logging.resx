@@ -117,4 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Btn_Start_Click_ENDVALIDMEDIA" xml:space="preserve">
+    <value>&gt;&gt;&gt; END VALID MEDIA &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Start_Click_ENDNOTVALIDMEDIA" xml:space="preserve">
+    <value>&gt;&gt;&gt; END &gt; NOT &lt; VALID MEDIA &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Start_Click_STARTVALIDMEDIA" xml:space="preserve">
+    <value>&gt;&gt;&gt; START VALID MEDIA &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Start_Click_STARTNOTVALIDMEDIA" xml:space="preserve">
+    <value>\r\n---------------------------------\r\n&gt;&gt;&gt; START &gt;&gt; NOT &lt;&lt; VALID MEDIA &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Start_Click_ERRORExMessage" xml:space="preserve">
+    <value>&gt;&gt;&gt; ERROR: {0} &lt;&lt;&lt;</value>
+  </data>
+  <data name="ProcessFileAsync_SkippedNameAndSizeAlreadySeen" xml:space="preserve">
+    <value>Skipped (name and size already seen) {0}</value>
+  </data>
+  <data name="ProcessFileAsync_SkippedDuplicateConfirmedByHash" xml:space="preserve">
+    <value>Skipped (duplicate confirmed by hash) {0} -&gt; {1}</value>
+  </data>
+  <data name="ProcessFileAsync_SkippedSameEXIFUniqueImageID" xml:space="preserve">
+    <value>Skipped (same EXIF UniqueImageID) {0} -&gt; {1}</value>
+  </data>
+  <data name="ProcessFileAsyncValidExt_Copied" xml:space="preserve">
+    <value>Copied {0} -&gt; {1}</value>
+  </data>
+  <data name="ProcessFileAsync_ErrorDuringProcessingOf" xml:space="preserve">
+    <value>Error during processing of {0}: {1}</value>
+  </data>
+  <data name="FrmPhotoSearchMove_FormClosing_EXIT" xml:space="preserve">
+    <value>&gt;&gt;&gt; EXIT &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Cancel_Click_CANCELREQUEST" xml:space="preserve">
+    <value>&gt;&gt;&gt; CANCEL REQUEST !!! &lt;&lt;&lt;</value>
+  </data>
+  <data name="Btn_Start_Click_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ProcessFileAsyncNotValidExt_Copied" xml:space="preserve">
+    <value>Copied {0} -&gt; {1}</value>
+  </data>
 </root>

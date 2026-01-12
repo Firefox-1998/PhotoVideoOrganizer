@@ -92,8 +92,8 @@
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(434, 44);
             btnClose.TabIndex = 6;
-            btnClose.Text = "✨ Close ✨";
-            btnClose.Click += btnClose_Click;
+            btnClose.Text = "✨";
+            btnClose.Click += BtnClose_Click;
             // 
             // tableLayoutPanel
             // 
