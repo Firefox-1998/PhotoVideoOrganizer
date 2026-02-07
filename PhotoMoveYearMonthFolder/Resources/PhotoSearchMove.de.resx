@@ -157,7 +157,7 @@
     <value>Verzeichnissuche</value>
   </data>
   <data name="FrmPhotoSearchMove_SelectDirectoryToImageSearch" xml:space="preserve">
-    <value>Wählen Sie Verzeichnis zur Bildsuche.</value>
+    <value>Wählen Sie Verzeichnis zur Bildsuche</value>
   </data>
   <data name="FrmPhotoSearchMove_Cancel" xml:space="preserve">
     <value>Stornieren</value>
@@ -178,6 +178,9 @@
     <value>Nur ausgewähltes Stammverzeichnis durchsuchen</value>
   </data>
   <data name="FrmPhotoSearchMove_SelectDirectoryToImageCopy" xml:space="preserve">
-    <value>Wählen Sie Verzeichnis zum Kopieren des Bildes.</value>
+    <value>Wählen Sie Verzeichnis zum Kopieren des Bildes</value>
+  </data>
+  <data name="FrmPhotoSearchMove_lblLanguageUI" xml:space="preserve">
+    <value>UI-Sprache:</value>
   </data>
 </root>

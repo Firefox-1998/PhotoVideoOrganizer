@@ -205,6 +205,15 @@ namespace PhotoMoveYearMonthFolder.Resources {
         }
         
         /// <summary>
+        ///   Cerca una stringa localizzata simile a UI Language:.
+        /// </summary>
+        internal static string FrmPhotoSearchMove_lblLanguageUI {
+            get {
+                return ResourceManager.GetString("FrmPhotoSearchMove_lblLanguageUI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una stringa localizzata simile a Search Image Selected Root Only.
         /// </summary>
         internal static string FrmPhotoSearchMove_SearchImageSelectedRootOnly {

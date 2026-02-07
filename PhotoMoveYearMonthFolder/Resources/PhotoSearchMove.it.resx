@@ -180,4 +180,7 @@
   <data name="FrmPhotoSearchMove_SelectDirectoryToImageCopy" xml:space="preserve">
     <value>Selezionare Directory dove copiare immagini</value>
   </data>
+  <data name="FrmPhotoSearchMove_lblLanguageUI" xml:space="preserve">
+    <value>Lingua dell'interfaccia:</value>
+  </data>
 </root>

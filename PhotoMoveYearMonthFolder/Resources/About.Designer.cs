@@ -61,6 +61,15 @@ namespace PhotoMoveYearMonthFolder.Resources {
         }
         
         /// <summary>
+        ///   Cerca una stringa localizzata simile a This program search &quot;duplicates&quot; photo, video and copy in destination path dividing the files by year and month of shooting..
+        /// </summary>
+        internal static string Apply_Description {
+            get {
+                return ResourceManager.GetString("Apply_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una stringa localizzata simile a 📸 {0} - About.
         /// </summary>
         internal static string ApplyInfo_ApplicationProductNameAbout {

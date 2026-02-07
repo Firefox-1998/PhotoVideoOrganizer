@@ -138,4 +138,7 @@
   <data name="ApplyInfo_MissingCopyright" xml:space="preserve">
     <value>Copyright ©</value>
   </data>
+  <data name="Apply_Description" xml:space="preserve">
+    <value>This program search "duplicates" photo, video and copy in destination path dividing the files by year and month of shooting.</value>
+  </data>
 </root>

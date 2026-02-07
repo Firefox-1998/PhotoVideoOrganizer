@@ -32,7 +32,7 @@ namespace PhotoMoveYearMonthFolder
         private void ApplyInfo()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>()?.Description ?? "";
+            var description = About.Apply_Description; // Localized description from About.resx
             var version = assembly.GetName().Version?.ToString() ?? "";
             var developer = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .FirstOrDefault(a => a.Key == "Developer")?.Value ?? About.ApplyInfo_MissingDeveloper;

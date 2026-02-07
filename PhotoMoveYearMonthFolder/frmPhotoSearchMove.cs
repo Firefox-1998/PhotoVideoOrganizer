@@ -59,6 +59,7 @@ namespace PhotoMoveYearMonthFolder
         private void UpdateTextsFromResources()
         {
             // Reassign visible texts from resource properties (evaluated with CurrentUICulture)
+            lblLanguageUI.Text = PhotoSearchMove.FrmPhotoSearchMove_lblLanguageUI;
             Btn_DirDest.Text = PhotoSearchMove.FrmPhotoSearchMove_SelectDirectoryToImageCopy;
             Lbl_DirSearch.Text = string.IsNullOrEmpty(sSearchDir) 
                 ? PhotoSearchMove.FrmPhotoSearchMove_DirectorySearch 

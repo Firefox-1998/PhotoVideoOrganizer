@@ -80,7 +80,7 @@
             lblDescription.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblDescription.Location = new Point(23, 218);
             lblDescription.Name = "lblDescription";
-            lblDescription.Size = new Size(434, 32);
+            lblDescription.Size = new Size(434, 40);
             lblDescription.TabIndex = 5;
             lblDescription.TextAlign = ContentAlignment.MiddleLeft;
             // 
@@ -88,9 +88,9 @@
             // 
             btnClose.Dock = DockStyle.Fill;
             btnClose.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            btnClose.Location = new Point(23, 253);
+            btnClose.Location = new Point(23, 261);
             btnClose.Name = "btnClose";
-            btnClose.Size = new Size(434, 44);
+            btnClose.Size = new Size(434, 36);
             btnClose.TabIndex = 6;
             btnClose.Text = "✨";
             btnClose.Click += BtnClose_Click;
@@ -116,7 +116,7 @@
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
-            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
+            tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             tableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanel.Size = new Size(480, 320);
             tableLayoutPanel.TabIndex = 0;
@@ -125,12 +125,14 @@
             // 
             BackColor = SystemColors.Control;
             ClientSize = new Size(480, 320);
+            ControlBox = false;
             Controls.Add(tableLayoutPanel);
             Font = new Font("Segoe UI", 10F);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            MinimizeBox = false;
             Name = "FrmAbout";
             StartPosition = FormStartPosition.CenterParent;
-            Text = "About";
+            Text = "ℹ️ About - Photo/Video Organizer";
             tableLayoutPanel.ResumeLayout(false);
             ResumeLayout(false);
         }

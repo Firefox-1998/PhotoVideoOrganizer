@@ -138,4 +138,7 @@
   <data name="ApplyInfo_MissingCopyright" xml:space="preserve">
     <value>Urheberrecht ©</value>
   </data>
+  <data name="Apply_Description" xml:space="preserve">
+    <value>Dieses Programm sucht nach „Duplikaten“ von Fotos, Videos und Kopien im Zielpfad und unterteilt die Dateien nach Jahr und Monat der Aufnahme.</value>
+  </data>
 </root>

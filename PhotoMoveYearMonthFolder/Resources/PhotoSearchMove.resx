@@ -180,4 +180,7 @@
   <data name="FrmPhotoSearchMove_SelectDirectoryToImageCopy" xml:space="preserve">
     <value>Select Directory To Image Copy</value>
   </data>
+  <data name="FrmPhotoSearchMove_lblLanguageUI" xml:space="preserve">
+    <value>UI Language:</value>
+  </data>
 </root>

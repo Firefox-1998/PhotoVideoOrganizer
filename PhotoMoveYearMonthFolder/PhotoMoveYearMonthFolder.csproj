@@ -48,8 +48,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\About.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>About.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\PhotoSearchMove.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PhotoSearchMove.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Update="Resources\About.resx">
-      <Generator></Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>About.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="frmAbout.resx">
       <Generator></Generator>
@@ -58,7 +72,9 @@
       <Generator></Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\PhotoSearchMove.resx">
-      <Generator></Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <LastGenOutput>PhotoSearchMove.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

@@ -35,6 +35,7 @@
             lblComment = new Label();
             chkRootOnly = new CheckBox();
             cmbLanguage = new ComboBox();
+            lblLanguageUI = new Label();
             ((System.ComponentModel.ISupportInitialize)tbMaxThread).BeginInit();
             SuspendLayout();
             // 
@@ -228,17 +229,28 @@
             cmbLanguage.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbLanguage.FormattingEnabled = true;
             cmbLanguage.Items.AddRange(new object[] { "English (US)", "Italiano", "Français", "Deutsch" });
-            cmbLanguage.Location = new Point(12, 4);
+            cmbLanguage.Location = new Point(188, 5);
             cmbLanguage.Name = "cmbLanguage";
-            cmbLanguage.Size = new Size(200, 23);
+            cmbLanguage.Size = new Size(152, 23);
             cmbLanguage.TabIndex = 17;
             cmbLanguage.SelectedIndexChanged += CmbLanguage_SelectedIndexChanged;
+            // 
+            // lblLanguageUI
+            // 
+            lblLanguageUI.Font = new Font("Calibri", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblLanguageUI.Location = new Point(12, 8);
+            lblLanguageUI.Name = "lblLanguageUI";
+            lblLanguageUI.Size = new Size(170, 20);
+            lblLanguageUI.TabIndex = 18;
+            lblLanguageUI.Text = "UI:";
+            lblLanguageUI.TextAlign = ContentAlignment.MiddleRight;
             // 
             // FrmPhotoSearchMove
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(474, 341);
+            ClientSize = new Size(484, 341);
+            Controls.Add(lblLanguageUI);
             Controls.Add(cmbLanguage);
             Controls.Add(chkRootOnly);
             Controls.Add(lblComment);
@@ -292,5 +304,6 @@
         private Label lblComment;
         private CheckBox chkRootOnly;
         private ComboBox cmbLanguage;
+        private Label lblLanguageUI;
     }
 }

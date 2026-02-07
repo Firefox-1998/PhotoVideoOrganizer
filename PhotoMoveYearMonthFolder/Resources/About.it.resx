@@ -138,4 +138,7 @@
   <data name="ApplyInfo_MissingCopyright" xml:space="preserve">
     <value>Diritto d'autore©</value>
   </data>
+  <data name="Apply_Description" xml:space="preserve">
+    <value>Questo programma ricerca i "duplicati" di foto, video e li copia nel percorso di destinazione dividendo i file per anno e mese di scatto.</value>
+  </data>
 </root>
