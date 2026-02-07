@@ -79,7 +79,7 @@ This program uses third-party libraries, each with its own license:
 
 ---
 
-2025 © G.L. aka Firefox_1998
+2026 © G.L. Develop aka Firefox_1998
 
 ---
 
@@ -162,6 +162,6 @@ Questo programma utilizza librerie di terze parti, ciascuna con la propria licen
 
 ---
  
-2025 © G.L. aka Firefox_1998
+2026 © G.L. Develop aka Firefox_1998
 
 **Made with ❤️ by Firefox_1998**
