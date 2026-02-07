@@ -121,7 +121,7 @@
     <value>Fil maximum: </value>
   </data>
   <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
-    <value>DEMANDE D'ANNULATION\r\nAttendez...</value>
+    <value>OPÉRATION ANNULÉE - Attendez…</value>
   </data>
   <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
     <value>Nombre. de fichiers traités : {0}</value>

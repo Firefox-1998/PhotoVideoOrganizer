@@ -31,12 +31,14 @@ namespace PhotoMoveYearMonthFolder
 
         private void ApplyInfo()
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var description = About.Apply_Description; // Localized description from About.resx
-            var version = assembly.GetName().Version?.ToString() ?? "";
-            var developer = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string description = About.Apply_Description; // Localized description from About.resx
+            string version = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version
+                ?? assembly.GetName().Version?.ToString()
+                ?? "";
+            string developer = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .FirstOrDefault(a => a.Key == "Developer")?.Value ?? About.ApplyInfo_MissingDeveloper;
-            var copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? About.ApplyInfo_MissingCopyright;
+            string copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright ?? About.ApplyInfo_MissingCopyright;
 
             // Localized texts from strongly-typed resources (About.resx)
             lblTitle.Text = string.Format(About.ApplyInfo_ApplicationProductNameAbout, Application.ProductName);

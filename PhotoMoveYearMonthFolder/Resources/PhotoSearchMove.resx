@@ -121,7 +121,7 @@
     <value>Max Thread: </value>
   </data>
   <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
-    <value>CANCEL REQUEST\r\nWait...</value>
+    <value>CANCEL REQUEST - Wait...</value>
   </data>
   <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
     <value>Num. of files processed: {0}</value>

@@ -1,4 +1,4 @@
-﻿﻿# 📸 Photo/Video Organizer
+﻿# 📸 Photo/Video Organizer
 
 ## 🇺🇸 English
 
@@ -12,6 +12,10 @@ The program organizes your media files by year and month, automatically discardi
 - Discards duplicates 🗑️
 - Supports images & videos 🎞️
 - Extracts date from Exif or filename 🕒
+- Multi-language UI (🇺🇸 English, 🇮🇹 Italian, 🇫🇷 French, 🇩🇪 German) 🌍
+- Asynchronous processing with cancellation support ⚡
+- Configurable multi-threading for faster processing 🚀
+- Real-time progress reporting 📊
 
 ---
 
@@ -20,10 +24,22 @@ The program organizes your media files by year and month, automatically discardi
 - **Duplicates** are found using:
   - File hash (SHA-256) 🧮
   - Exif UniqueImageID (when available) 🆔
+  - File name and size pre-check for performance optimization
 - **Shooting date** is detected from:
   - Exif data: DateTimeOriginal, DateTimeDigitized, DateTime 🗓️
   - Filename (if it contains a date/time) 🏷️
   - Filesystem date as fallback 📁
+
+---
+
+## ⚙️ Technical Features
+
+- **Modern Architecture**: Clean separation between UI and services (SOLID principles)
+- **Async/Await Pattern**: Non-blocking file processing using `Parallel.ForEachAsync`
+- **Thread-Safe Logging**: Background queue-based logging system
+- **Cancellation Support**: Graceful operation cancellation via `CancellationToken`
+- **Progress Reporting**: Real-time UI updates via `IProgressReporter` interface
+- **Resource Management**: Proper `IDisposable` implementation to prevent memory leaks
 
 ---
 
@@ -79,6 +95,13 @@ This program uses third-party libraries, each with its own license:
 
 ---
 
+## 🛠️ Requirements
+
+- .NET 9.0 or later
+- Windows Forms compatible OS
+
+---
+
 2026 © G.L. Develop aka Firefox_1998
 
 ---
@@ -95,6 +118,10 @@ Il programma organizza i file multimediali per anno e mese, scartando automatica
 - Scarta i duplicati 🗑️
 - Supporta immagini e video 🎞️
 - Estrae la data da Exif o dal nome file 🕒
+- Interfaccia multilingua (🇺🇸 Inglese, 🇮🇹 Italiano, 🇫🇷 Francese, 🇩🇪 Tedesco) 🌍
+- Elaborazione asincrona con supporto annullamento ⚡
+- Multi-threading configurabile per elaborazione più veloce 🚀
+- Report progresso in tempo reale 📊
 
 ---
 
@@ -103,10 +130,22 @@ Il programma organizza i file multimediali per anno e mese, scartando automatica
 - I **duplicati** vengono trovati tramite:
   - Hash del file (SHA-256) 🧮
   - UniqueImageID Exif (se disponibile) 🆔
+  - Pre-controllo nome file e dimensione per ottimizzare le prestazioni
 - La **data di scatto** viene rilevata da:
   - Dati Exif: DateTimeOriginal, DateTimeDigitized, DateTime 🗓️
   - Nome file (se contiene data/ora) 🏷️
   - Data del filesystem come fallback 📁
+
+---
+
+## ⚙️ Caratteristiche Tecniche
+
+- **Architettura Moderna**: Separazione pulita tra UI e servizi (principi SOLID)
+- **Pattern Async/Await**: Elaborazione file non bloccante con `Parallel.ForEachAsync`
+- **Logging Thread-Safe**: Sistema di logging basato su code in background
+- **Supporto Annullamento**: Cancellazione operazioni tramite `CancellationToken`
+- **Report Progresso**: Aggiornamenti UI in tempo reale via interfaccia `IProgressReporter`
+- **Gestione Risorse**: Implementazione corretta di `IDisposable` per prevenire memory leak
 
 ---
 
@@ -159,6 +198,13 @@ Questo programma utilizza librerie di terze parti, ciascuna con la propria licen
 | MetadataExtractor    | 2.8.1    | Apache 2.0  | https://github.com/drewnoakes/metadata-extractor |
 
 > Consulta il repository di ogni libreria per il testo completo della licenza.
+
+---
+
+## 🛠️ Requisiti
+
+- .NET 9.0 o successivo
+- Sistema operativo compatibile con Windows Forms
 
 ---
  

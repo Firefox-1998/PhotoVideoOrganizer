@@ -61,7 +61,7 @@ namespace PhotoMoveYearMonthFolder.Resources {
         }
         
         /// <summary>
-        ///   Cerca una stringa localizzata simile a CANCEL REQUEST\r\nWait....
+        ///   Cerca una stringa localizzata simile a CANCEL REQUEST - Wait....
         /// </summary>
         internal static string Btn_Cancel_Click_CANCELREQUESTRNWait {
             get {

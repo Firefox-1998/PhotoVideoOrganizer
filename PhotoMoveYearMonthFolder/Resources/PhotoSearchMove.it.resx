@@ -121,7 +121,7 @@
     <value>Thread massimi: </value>
   </data>
   <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
-    <value>ANNULLA RICHIESTA\r\nAttendere...</value>
+    <value>OPERAZIONE ANNULLATA - Attendere...</value>
   </data>
   <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
     <value>Num. di file elaborati: {0}</value>

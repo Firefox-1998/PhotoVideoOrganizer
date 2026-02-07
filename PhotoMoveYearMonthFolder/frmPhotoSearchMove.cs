@@ -1,54 +1,104 @@
 using PhotoMoveYearMonthFolder.Resources;
-using System.Collections.Concurrent;
+using PhotoMoveYearMonthFolder.Services;
 
 namespace PhotoMoveYearMonthFolder
 {
-    public partial class FrmPhotoSearchMove : Form
+    /// <summary>
+    /// Main form for the Photo/Video Organizer application.
+    /// Acts as a thin controller coordinating services and UI.
+    /// </summary>
+    public partial class FrmPhotoSearchMove : Form, IProgressReporter
     {
+        #region Constants
+
         private const string SuffixLogFile = "yyyyMMdd-HHmmss";
-        private string sSearchDir = "";
-        private string sDestDir = "";
-        private bool isProcessing;
+        private const string LogFileSuffix = "_PhotoSearchCopyAppLog.txt";
+        private const string ErrorLogFileSuffix = "_PhotoSearchCopyErrLog.txt";
+
+        #endregion
+
+        #region Fields
+
+        private string _searchDir = string.Empty;
+        private string _destDir = string.Empty;
+        private bool _isProcessing;
         private CancellationTokenSource? _cancellationTokenSource;
-        private int processedFiles = 0;
-        private int processedOtherFiles = 0;
-        private ConcurrentDictionary<(string name, long size), byte> processedFileKeys = new();
-        private readonly Dictionary<string, int> prefixToIndexMap = new()
-        {
-            {"IMG-", 4},
-            {"IMG_", 4},
-            {"VID-", 4},
-            {"AUD-", 4},
-            {"PPT-", 4},
-            {"Screenshot_", 11},
-            {"VideoCapture_", 13},
-            {"IMG", 3},
-            {"VID", 3},
-            {"WP_", 3},
-        };
+        private FileProcessingService? _processingService;
+
+        #endregion
+
+        #region Constructor
 
         public FrmPhotoSearchMove()
         {
             InitializeComponent();
+            InitializeLocalization();
+        }
 
-            // Subscribe to global event to update texts when culture changes
-            LocalizationManager.CultureChanged += LocalizationManager_CultureChanged;
-
-            // Set default language (English US)
+        private void InitializeLocalization()
+        {
+            LocalizationManager.CultureChanged += OnCultureChanged;
             LocalizationManager.SetCultureByIndex(0);
 
-            // Select combo box item (will trigger SelectedIndexChanged but SetCulture is idempotent)
             if (cmbLanguage.Items.Count > 0)
             {
                 cmbLanguage.SelectedIndex = 0;
             }
         }
 
-        private void LocalizationManager_CultureChanged(object? sender, EventArgs e)
+        #endregion
+
+        #region IProgressReporter Implementation
+
+        void IProgressReporter.ReportMediaFileProgress(int count, string fileName)
+        {
+            SafeUpdateLabel(LblFileProc, Path.GetFileName(fileName));
+            SafeUpdateLabel(LblNumFiles, string.Format(PhotoSearchMove.Btn_Start_Click_NumFileProcessed, count));
+        }
+
+        void IProgressReporter.ReportOtherFileProgress(int count, string fileName)
+        {
+            SafeUpdateLabel(LblOtherFileProc, Path.GetFileName(fileName));
+            SafeUpdateLabel(LblNumOtherFiles, string.Format(PhotoSearchMove.Btn_Start_Click_NumOtherFileProcessed, count));
+        }
+
+        void IProgressReporter.SetMediaProgressMarquee()
+        {
+            SafeUpdateLabel(LblNumFiles, string.Format(PhotoSearchMove.Btn_Start_Click_NumFileProcessed, "0"));
+            SafeUpdateProgressBar(pbProcessFiles, style: ProgressBarStyle.Marquee);
+        }
+
+        void IProgressReporter.SetOtherProgressMarquee()
+        {
+            SafeUpdateLabel(LblNumOtherFiles, string.Format(PhotoSearchMove.Btn_Start_Click_NumOtherFileProcessed, "0"));
+            SafeUpdateProgressBar(pbProcessedOtherFiles, style: ProgressBarStyle.Marquee);
+        }
+
+        void IProgressReporter.CompleteMediaProgress()
+        {
+            SafeUpdateProgressBar(pbProcessFiles, style: ProgressBarStyle.Blocks, value: pbProcessFiles.Maximum);
+        }
+
+        void IProgressReporter.CompleteOtherProgress()
+        {
+            SafeUpdateProgressBar(pbProcessedOtherFiles, style: ProgressBarStyle.Blocks, value: pbProcessedOtherFiles.Maximum);
+        }
+
+        void IProgressReporter.ResetProgress()
+        {
+            // Only reset progress labels and bars, NOT the Cancel button state
+            ResetProgressLabelsAndBars();
+        }
+
+        #endregion
+
+        #region Localization
+
+        private void OnCultureChanged(object? sender, EventArgs e)
         {
             if (InvokeRequired)
             {
-                Invoke((Action)UpdateTextsFromResources);
+                Invoke(UpdateTextsFromResources);
             }
             else
             {
@@ -58,22 +108,23 @@ namespace PhotoMoveYearMonthFolder
 
         private void UpdateTextsFromResources()
         {
-            // Reassign visible texts from resource properties (evaluated with CurrentUICulture)
             lblLanguageUI.Text = PhotoSearchMove.FrmPhotoSearchMove_lblLanguageUI;
             Btn_DirDest.Text = PhotoSearchMove.FrmPhotoSearchMove_SelectDirectoryToImageCopy;
-            Lbl_DirSearch.Text = string.IsNullOrEmpty(sSearchDir) 
-                ? PhotoSearchMove.FrmPhotoSearchMove_DirectorySearch 
-                : sSearchDir;
             Btn_DirSearch.Text = PhotoSearchMove.FrmPhotoSearchMove_SelectDirectoryToImageSearch;
             Btn_Cancel.Text = PhotoSearchMove.FrmPhotoSearchMove_Cancel;
             Btn_Start.Text = PhotoSearchMove.FrmPhotoSearchMove_Start;
-            Lbl_DirDestination.Text = string.IsNullOrEmpty(sDestDir) 
-                ? PhotoSearchMove.FrmPhotoSearchMove_DirectoryDestination 
-                : sDestDir;
-            lblMaxThread.Text = PhotoSearchMove.TbMaxThread_Scroll_MaxThread + tbMaxThread.Value.ToString();
             Btn_Exit.Text = PhotoSearchMove.FrmPhotoSearchMove_Exit;
             lblComment.Text = PhotoSearchMove.FrmPhotoSearchMove_lblComment;
             chkRootOnly.Text = PhotoSearchMove.FrmPhotoSearchMove_SearchImageSelectedRootOnly;
+            lblMaxThread.Text = PhotoSearchMove.TbMaxThread_Scroll_MaxThread + tbMaxThread.Value.ToString();
+
+            Lbl_DirSearch.Text = string.IsNullOrEmpty(_searchDir)
+                ? PhotoSearchMove.FrmPhotoSearchMove_DirectorySearch
+                : _searchDir;
+
+            Lbl_DirDestination.Text = string.IsNullOrEmpty(_destDir)
+                ? PhotoSearchMove.FrmPhotoSearchMove_DirectoryDestination
+                : _destDir;
         }
 
         private void CmbLanguage_SelectedIndexChanged(object? sender, EventArgs e)
@@ -84,129 +135,112 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private async void Btn_Start_Click(object sender, EventArgs e)
+        #endregion
+
+        #region UI State Management
+
+        private void SetUIProcessingState(bool processing)
         {
-            if (!string.IsNullOrEmpty(sSearchDir) && !string.IsNullOrEmpty(sDestDir) && !sSearchDir.Equals(sDestDir))
+            _isProcessing = processing;
+
+            Control[] interactiveControls = [tbMaxThread, Btn_DirDest, Btn_DirSearch, Btn_Start, Btn_Exit, chkRootOnly, cmbLanguage];
+            foreach (Control control in interactiveControls)
             {
-                _cancellationTokenSource = new();
-                Logger.SetLogFilePath(Path.Combine(sDestDir, $"{DateTime.Now.ToString(SuffixLogFile)}_PhotoSearchCopyAppLog.txt"));
-                Logger.SetErrorFilePath(Path.Combine(sDestDir, $"{DateTime.Now.ToString(SuffixLogFile)}_PhotoSearchCopyErrLog.txt"));
-                tbMaxThread.Enabled = false;
-                Btn_DirDest.Enabled = false;
-                Btn_DirSearch.Enabled = false;
-                Btn_Start.Enabled = false;
-                Btn_Cancel.Enabled = true;
-                Btn_Exit.Enabled = false;
-                chkRootOnly.Enabled = false;
-                cmbLanguage.Enabled = false;
-                isProcessing = true;
-                processedFiles = 0;
-                processedOtherFiles = 0;
-
-                try
-                {
-                    processedFileKeys = new();
-                    (IEnumerable<string> validFiles, IEnumerable<string> invalidFiles) = GetFiles(sSearchDir, chkRootOnly.Checked);
-
-                    ParallelOptions parallelOptions = new()
-                    {
-                        MaxDegreeOfParallelism = tbMaxThread.Value,
-                        CancellationToken = _cancellationTokenSource.Token
-                    };
-
-                    // Process valid files
-                    LblNumFiles.Text = string.Format(PhotoSearchMove.Btn_Start_Click_NumFileProcessed, "0");
-                    pbProcessFiles.Style = ProgressBarStyle.Marquee;
-                    Logger.Log(Logging.Btn_Start_Click_STARTVALIDMEDIA);
-                    await Parallel.ForEachAsync(validFiles, parallelOptions, async (file, token) =>
-                    {
-                        await ProcessFileAsync(file, LblFileProc, LblNumFiles);
-                    });
-                    Logger.Log(Logging.Btn_Start_Click_ENDVALIDMEDIA);
-                    pbProcessFiles.Style = ProgressBarStyle.Blocks;
-                    pbProcessFiles.Value = pbProcessFiles.Maximum;
-
-                    // Process other files
-                    processedFileKeys = new();
-                    LblNumOtherFiles.Text = string.Format(PhotoSearchMove.Btn_Start_Click_NumOtherFileProcessed, "0");
-                    pbProcessedOtherFiles.Style = ProgressBarStyle.Marquee;
-                    Logger.Log(Logging.Btn_Start_Click_STARTNOTVALIDMEDIA);
-                    await Parallel.ForEachAsync(invalidFiles, parallelOptions, async (file, token) =>
-                    {
-                        await ProcessFileAsyncNotValidExt(file, LblOtherFileProc, LblNumOtherFiles);
-                    });
-                    Logger.Log(Logging.Btn_Start_Click_ENDNOTVALIDMEDIA);
-                    pbProcessedOtherFiles.Style = ProgressBarStyle.Blocks;
-                    pbProcessedOtherFiles.Value = pbProcessedOtherFiles.Maximum;
-
-                    MessageBox.Show(PhotoSearchMove.Btn_Start_Click_ElaborazioneCompletata,
-                                    PhotoSearchMove.Btn_Start_Click_Informazioni,
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Information);
-                }
-                catch (OperationCanceledException)
-                {
-                    MessageBox.Show(PhotoSearchMove.Btn_Start_Click_ElaborazioneAnnullataDallUtente,
-                                    PhotoSearchMove.Btn_Start_Click_Annullato,
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Warning);
-                }
-                catch (Exception ex)
-                {
-                    if (!_cancellationTokenSource.IsCancellationRequested)
-                    {
-                        Logger.LogError(string.Format(Logging.Btn_Start_Click_ERRORExMessage, ex.Message));
-                        MessageBox.Show(string.Format(Logging.Btn_Start_Click_ERRORExMessage, ex.Message),
-                                                      Logging.Btn_Start_Click_Error,
-                                                      MessageBoxButtons.OK,
-                                                      MessageBoxIcon.Error);
-                    }
-                }
-                finally
-                {
-                    _cancellationTokenSource?.Dispose();
-                    LblNumFiles.Text = "-";
-                    LblFileProc.Text = "-";
-                    LblNumOtherFiles.Text = "-";
-                    LblOtherFileProc.Text = "-";
-                    pbProcessFiles.Style = ProgressBarStyle.Blocks;
-                    pbProcessFiles.Value = 0;
-                    pbProcessedOtherFiles.Style = ProgressBarStyle.Blocks;
-                    pbProcessedOtherFiles.Value = 0;
-                    tbMaxThread.Enabled = true;
-                    Btn_DirDest.Enabled = true;
-                    Btn_DirSearch.Enabled = true;
-                    Btn_Start.Enabled = true;
-                    Btn_Exit.Enabled = true;
-                    chkRootOnly.Enabled = true;
-                    cmbLanguage.Enabled = true;
-                    if (Btn_Cancel.Enabled)
-                    {
-                        Btn_Cancel.Enabled = false;
-                    }
-                    else
-                    {
-                        Btn_Cancel.Text = PhotoSearchMove.FrmPhotoSearchMove_Cancel;
-                    }
-                    isProcessing = false;
-                    Logger.FlushNow();
-                }
+                control.Enabled = !processing;
             }
-            else
+
+            // Cancel button is enabled only during processing
+            Btn_Cancel.Enabled = processing;
+            Btn_Cancel.Text = PhotoSearchMove.FrmPhotoSearchMove_Cancel;
+
+            if (!processing)
             {
-                MessageBox.Show(PhotoSearchMove.Btn_Start_Click_PleaseVerifyDirectoriesAreCorrect,
-                                PhotoSearchMove.FrmPhotoSearchMove_FormClosing_Warning,
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
+                ResetProgressLabelsAndBars();
             }
         }
+
+        /// <summary>
+        /// Resets only the progress labels and progress bars.
+        /// Does NOT affect the Cancel button state.
+        /// </summary>
+        private void ResetProgressLabelsAndBars()
+        {
+            SafeUpdateLabel(LblNumFiles, "-");
+            SafeUpdateLabel(LblFileProc, "-");
+            SafeUpdateLabel(LblNumOtherFiles, "-");
+            SafeUpdateLabel(LblOtherFileProc, "-");
+
+            SafeUpdateProgressBar(pbProcessFiles, style: ProgressBarStyle.Blocks, value: 0);
+            SafeUpdateProgressBar(pbProcessedOtherFiles, style: ProgressBarStyle.Blocks, value: 0);
+        }
+
+        #endregion
+
+        #region Thread-Safe UI Updates
+
+        private void SafeUpdateLabel(Label label, string text)
+        {
+            if (IsDisposed) return;
+
+            try
+            {
+                if (label.InvokeRequired)
+                {
+                    BeginInvoke(() =>
+                    {
+                        if (!IsDisposed && !label.IsDisposed)
+                            label.Text = text;
+                    });
+                }
+                else if (!label.IsDisposed)
+                {
+                    label.Text = text;
+                }
+            }
+            catch (ObjectDisposedException) { }
+            catch (InvalidOperationException) { }
+        }
+
+        private void SafeUpdateProgressBar(ProgressBar progressBar, ProgressBarStyle? style = null, int? value = null)
+        {
+            if (IsDisposed) return;
+
+            try
+            {
+                Action updateAction = () =>
+                {
+                    if (IsDisposed || progressBar.IsDisposed) return;
+
+                    if (style.HasValue)
+                        progressBar.Style = style.Value;
+
+                    if (value.HasValue)
+                        progressBar.Value = value.Value;
+                };
+
+                if (progressBar.InvokeRequired)
+                {
+                    BeginInvoke(updateAction);
+                }
+                else
+                {
+                    updateAction();
+                }
+            }
+            catch (ObjectDisposedException) { }
+            catch (InvalidOperationException) { }
+        }
+
+        #endregion
+
+        #region Directory Selection
 
         private void Btn_DirSearch_Click(object sender, EventArgs e)
         {
             if (Fbd_DirSel.ShowDialog() == DialogResult.OK)
             {
-                sSearchDir = Fbd_DirSel.SelectedPath;
-                Lbl_DirSearch.Text = sSearchDir;
+                _searchDir = Fbd_DirSel.SelectedPath;
+                Lbl_DirSearch.Text = _searchDir;
             }
         }
 
@@ -214,164 +248,133 @@ namespace PhotoMoveYearMonthFolder
         {
             if (Fbd_DirSel.ShowDialog() == DialogResult.OK)
             {
-                sDestDir = Fbd_DirSel.SelectedPath;
-                Lbl_DirDestination.Text = sDestDir;
+                _destDir = Fbd_DirSel.SelectedPath;
+                Lbl_DirDestination.Text = _destDir;
             }
         }
 
-        private async Task ProcessFileAsync(string file, Label lblFileProc, Label lblNumFiles)
+        private bool ValidateDirectories()
         {
+            if (string.IsNullOrEmpty(_searchDir) ||
+                string.IsNullOrEmpty(_destDir) ||
+                _searchDir.Equals(_destDir, StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(
+                    PhotoSearchMove.Btn_Start_Click_PleaseVerifyDirectoriesAreCorrect,
+                    PhotoSearchMove.FrmPhotoSearchMove_FormClosing_Warning,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return false;
+            }
+            return true;
+        }
+
+        #endregion
+
+        #region Main Processing
+
+        private async void Btn_Start_Click(object sender, EventArgs e)
+        {
+            if (!ValidateDirectories()) return;
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken token = _cancellationTokenSource.Token;
+
+            int maxThreads = tbMaxThread.Value;
+            bool rootOnly = chkRootOnly.Checked;
+            string searchDir = _searchDir;
+            string destDir = _destDir;
+
+            InitializeLogging(destDir);
+            SetUIProcessingState(true);
+
+            _processingService = new FileProcessingService(this);
+
             try
             {
-                FileInfo fileInfo = new(file);
-                (string Name, long Length) fileKey = (fileInfo.Name, fileInfo.Length);
-                if (!processedFileKeys.TryAdd(fileKey, 0))
-                {
-                    Logger.Log(string.Format(Logging.ProcessFileAsync_SkippedNameAndSizeAlreadySeen, file));
-                    return;
-                }
+                await _processingService.ProcessAllFilesAsync(
+                    searchDir,
+                    destDir,
+                    rootOnly,
+                    maxThreads,
+                    token);
 
-                (string anno, string mese) = RecuperaMeseAnnoDaNomeFile(Path.GetFileNameWithoutExtension(file), file);
-
-                string cartellaAnno = Path.Combine(sDestDir, anno);
-                Directory.CreateDirectory(cartellaAnno);
-
-                string cartellaMese = Path.Combine(cartellaAnno, mese);
-                Directory.CreateDirectory(cartellaMese);
-
-                string destinazioneFile = Path.Combine(cartellaMese, fileInfo.Name);
-
-                if (System.IO.File.Exists(destinazioneFile))
-                {
-                    FileInfo destInfo = new(destinazioneFile);
-                    if (fileInfo.Length == destInfo.Length)
-                    {
-                        string sourceHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
-                        string destHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
-                        if (string.Equals(sourceHash, destHash, StringComparison.Ordinal))
-                        {
-                            Logger.Log(string.Format(Logging.ProcessFileAsync_SkippedDuplicateConfirmedByHash, file, destinazioneFile));
-                            return;
-                        }
-                    }
-
-                    if (FrmPhotoSearchMoveHelpers.IsImageFileFast(file))
-                    {
-                        string srcId = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(file);
-                        if (!string.IsNullOrEmpty(srcId))
-                        {
-                            string dstId = FrmPhotoSearchMoveHelpers.ReadExifUniqueImageID(destinazioneFile);
-                            if (srcId == dstId)
-                            {
-                                Logger.Log(string.Format(Logging.ProcessFileAsync_SkippedSameEXIFUniqueImageID, file, destinazioneFile));
-                                return;
-                            }
-                        }
-                    }
-
-                    string newDestFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, newDestFile);
-                    Logger.Log(string.Format(Logging.ProcessFileAsyncValidExt_Copied, file, written));
-                }
-                else
-                {
-                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinazioneFile);
-                    Logger.Log(string.Format(Logging.ProcessFileAsyncValidExt_Copied, file, written));
-                }
+                ShowCompletionMessage();
             }
-            catch (Exception ex) when (ex is not OperationCanceledException)
+            catch (OperationCanceledException)
             {
-                Logger.LogError(string.Format(Logging.ProcessFileAsync_ErrorDuringProcessingOf, file, ex.Message));
+                ShowCancellationMessage();
+            }
+            catch (Exception ex) when (!token.IsCancellationRequested)
+            {
+                HandleProcessingError(ex);
             }
             finally
             {
-                int count = Interlocked.Increment(ref processedFiles);
-                lblFileProc.Invoke((Action)(() => lblFileProc.Text = Path.GetFileName(file)));
-                lblNumFiles.Invoke((Action)(() => lblNumFiles.Text = string.Format(PhotoSearchMove.Btn_Start_Click_NumFileProcessed, count)));
+                SetUIProcessingState(false);
+                _cancellationTokenSource?.Dispose();
+                _cancellationTokenSource = null;
+                _processingService = null;
             }
         }
 
-        private async Task ProcessFileAsyncNotValidExt(string file, Label lblOtherFileProc, Label lblNumOtherFiles)
+        private static void InitializeLogging(string destDir)
         {
-            try
-            {
-                FileInfo fileInfo = new(file);
-                (string Name, long Length) fileKey = (fileInfo.Name, fileInfo.Length);
-                if (!processedFileKeys.TryAdd(fileKey, 0))
-                {
-                    Logger.Log(string.Format(Logging.ProcessFileAsync_SkippedNameAndSizeAlreadySeen, file));
-                    return;
-                }
-
-                string cartellaOtherExt = Path.Combine(sDestDir, "OtherFilesExt");
-                Directory.CreateDirectory(cartellaOtherExt);
-
-                string destinazioneFile = Path.Combine(cartellaOtherExt, fileInfo.Name);
-
-                if (System.IO.File.Exists(destinazioneFile))
-                {
-                    FileInfo destInfo = new(destinazioneFile);
-                    if (fileInfo.Length == destInfo.Length)
-                    {
-                        string sourceHash = FrmPhotoSearchMoveHelpers.ComputeHash(file);
-                        string destHash = FrmPhotoSearchMoveHelpers.ComputeHash(destinazioneFile);
-                        if (string.Equals(sourceHash, destHash, StringComparison.Ordinal))
-                        {
-                            Logger.Log(string.Format(Logging.ProcessFileAsync_SkippedDuplicateConfirmedByHash, file, destinazioneFile));
-                            return;
-                        }
-                    }
-
-                    string newDestFile = FrmPhotoSearchMoveHelpers.GenerateNewFileName(destinazioneFile);
-                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, newDestFile);
-                    Logger.Log(string.Format(Logging.ProcessFileAsyncNotValidExt_Copied, file, written));
-                }
-                else
-                {
-                    string written = await FrmPhotoSearchMoveHelpers.CopyFileWithUniqueNameAsync(file, destinazioneFile);
-                    Logger.Log(string.Format(Logging.ProcessFileAsyncNotValidExt_Copied, file, written));
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                Logger.LogError(string.Format(Logging.ProcessFileAsync_ErrorDuringProcessingOf, file, ex.Message));
-            }
-            finally
-            {
-                int count = Interlocked.Increment(ref processedOtherFiles);
-                lblOtherFileProc.Invoke((Action)(() => lblOtherFileProc.Text = Path.GetFileName(file)));
-                lblNumOtherFiles.Invoke((Action)(() => lblNumOtherFiles.Text = string.Format(
-                    PhotoSearchMove.Btn_Start_Click_NumOtherFileProcessed,
-                    count)));
-            }
+            string timestamp = DateTime.Now.ToString(SuffixLogFile);
+            Logger.SetLogFilePath(Path.Combine(destDir, timestamp + LogFileSuffix));
+            Logger.SetErrorFilePath(Path.Combine(destDir, timestamp + ErrorLogFileSuffix));
         }
 
-        private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
+        #endregion
+
+        #region User Messages
+
+        private static void ShowCompletionMessage()
         {
-            if (isProcessing)
-            {
-                e.Cancel = true;
-                MessageBox.Show(PhotoSearchMove.FrmPhotoSearchMove_FormClosing_CannotBeClosedWhileProcessingIsInProgress,
-                                PhotoSearchMove.FrmPhotoSearchMove_FormClosing_Warning,
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-            }
-            else
-            {
-                Logger.Log(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
-                Logger.LogError(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
-                Logger.FlushNow();
-                Logger.Shutdown();
-            }
+            MessageBox.Show(
+                PhotoSearchMove.Btn_Start_Click_ElaborazioneCompletata,
+                PhotoSearchMove.Btn_Start_Click_Informazioni,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        private static void ShowCancellationMessage()
+        {
+            MessageBox.Show(
+                PhotoSearchMove.Btn_Start_Click_ElaborazioneAnnullataDallUtente,
+                PhotoSearchMove.Btn_Start_Click_Annullato,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+
+        private static void HandleProcessingError(Exception ex)
+        {
+            Logger.LogError(string.Format(Logging.Btn_Start_Click_ERRORExMessage, ex.Message));
+            MessageBox.Show(
+                string.Format(Logging.Btn_Start_Click_ERRORExMessage, ex.Message),
+                Logging.Btn_Start_Click_Error,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void TbMaxThread_Scroll(object sender, EventArgs e)
+        {
+            lblMaxThread.Text = PhotoSearchMove.TbMaxThread_Scroll_MaxThread + tbMaxThread.Value.ToString();
         }
 
         private void Btn_Cancel_Click(object sender, EventArgs e)
         {
-            DialogResult Cancelrequest = MessageBox.Show(PhotoSearchMove.Btn_Cancel_Click_StopProcessing,
-                                                         PhotoSearchMove.Btn_Start_Click_Informazioni,
-                                                         MessageBoxButtons.YesNo,
-                                                         MessageBoxIcon.Information);
-            if (Cancelrequest == DialogResult.Yes)
+            DialogResult result = MessageBox.Show(
+                PhotoSearchMove.Btn_Cancel_Click_StopProcessing,
+                PhotoSearchMove.Btn_Start_Click_Informazioni,
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+
+            if (result == DialogResult.Yes)
             {
                 _cancellationTokenSource?.Cancel();
                 Logger.Log(Logging.Btn_Cancel_Click_CANCELREQUEST);
@@ -382,118 +385,60 @@ namespace PhotoMoveYearMonthFolder
             }
         }
 
-        private void TbMaxThread_Scroll(object sender, EventArgs e)
-        {
-            lblMaxThread.Text = PhotoSearchMove.TbMaxThread_Scroll_MaxThread + tbMaxThread.Value.ToString();
-        }
-
-        public static (IEnumerable<string> validFiles, IEnumerable<string> invalidFiles) GetFiles(string rootPath, bool rootOnly)
-        {
-            EnumerationOptions enumerationOptions = new()
-            {
-                RecurseSubdirectories = !rootOnly,
-                IgnoreInaccessible = true,
-                AttributesToSkip = FileAttributes.System | FileAttributes.Hidden
-            };
-
-            IEnumerable<string> allFiles;
-            try
-            {
-                DirectoryInfo root = new(rootPath);
-                allFiles = (root.Attributes & (FileAttributes.System | FileAttributes.Hidden)) != 0
-                    ? Enumerable.Empty<string>()
-                    : Directory.EnumerateFiles(rootPath, "*", enumerationOptions);
-            }
-            catch
-            {
-                allFiles = Enumerable.Empty<string>();
-            }
-
-            HashSet<string> excludedExtensions = new(StringComparer.OrdinalIgnoreCase) { ".ini", ".db", ".com", ".exe", ".dll", ".txt" };
-
-            ILookup<bool, string> partitionedFiles = allFiles
-                .Where(file => !excludedExtensions.Contains(Path.GetExtension(file)))
-                .ToLookup(FrmPhotoSearchMoveHelpers.IsValidMediaBySniff);
-
-            return (
-                validFiles: partitionedFiles[true],
-                invalidFiles: partitionedFiles[false]
-            );
-        }
-
-        public (string, string) RecuperaMeseAnnoDaNomeFile(string nomeFile, string file)
-        {
-            string anno = "1970";
-            string mese = "01";
-            bool matchFound = false;
-
-            foreach (KeyValuePair<string, int> entry in prefixToIndexMap)
-            {
-                if (!nomeFile.StartsWith(entry.Key, StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                try
-                {
-                    string possibleAnno = nomeFile[entry.Value..(entry.Value + 4)];
-                    string possibleMese = nomeFile[(entry.Value + 4)..(entry.Value + 6)];
-                    int year = int.Parse(possibleAnno);
-
-                    if (year >= 1970 && year <= DateTime.Now.Year)
-                    {
-                        anno = possibleAnno;
-                        mese = possibleMese;
-                        matchFound = true;
-                        break;
-                    }
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    // continue
-                }
-            }
-
-            if (!matchFound)
-            {
-                (anno, mese) = ClsDateExtractor.ExtractYearMonth(nomeFile);
-                int parsedYear = int.Parse(anno);
-
-                if (parsedYear < 1970 || parsedYear > DateTime.Now.Year)
-                {
-                    string parsedDate = FrmPhotoSearchMoveHelpers.ReadExifDataOrFileSystemDate(file);
-                    anno = parsedDate[..4];
-                    mese = parsedDate[4..6];
-                }
-            }
-
-            return (anno, mese);
-        }
-
         private void Btn_Exit_Click(object sender, EventArgs e)
         {
-            Logger.Log(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
-            Logger.LogError(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
-            Logger.FlushNow();
-            Logger.Shutdown();
-            Application.Exit();
+            ShutdownApplication();
+        }
+
+        private void FrmPhotoSearchMove_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (_isProcessing)
+            {
+                e.Cancel = true;
+                MessageBox.Show(
+                    PhotoSearchMove.FrmPhotoSearchMove_FormClosing_CannotBeClosedWhileProcessingIsInProgress,
+                    PhotoSearchMove.FrmPhotoSearchMove_FormClosing_Warning,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+            else
+            {
+                ShutdownApplication();
+            }
         }
 
         private void LblComment_Click(object sender, EventArgs e)
         {
-            if (!isProcessing)
+            if (!_isProcessing)
             {
                 using FrmAbout about = new();
                 about.ShowDialog();
             }
         }
 
+        private static void ShutdownApplication()
+        {
+            Logger.Log(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
+            Logger.LogError(Logging.FrmPhotoSearchMove_FormClosing_EXIT);
+            Logger.Shutdown();
+            Application.Exit();
+        }
+
+        #endregion
+
+        #region IDisposable
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                LocalizationManager.CultureChanged -= LocalizationManager_CultureChanged;
+                LocalizationManager.CultureChanged -= OnCultureChanged;
+                _cancellationTokenSource?.Dispose();
                 components?.Dispose();
             }
             base.Dispose(disposing);
         }
+
+        #endregion
     }
 }

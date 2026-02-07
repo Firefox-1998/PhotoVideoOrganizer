@@ -121,7 +121,7 @@
     <value>Maximaler Thread: </value>
   </data>
   <data name="Btn_Cancel_Click_CANCELREQUESTRNWait" xml:space="preserve">
-    <value>ANFRAGE ABBRECHEN\r\nWarten...</value>
+    <value>VORGANG ABGEBROCHEN - Warten Sie…</value>
   </data>
   <data name="Btn_Start_Click_NumFileProcessed" xml:space="preserve">
     <value>Num. der verarbeiteten Dateien: {0}</value>
