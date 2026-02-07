@@ -1,6 +1,6 @@
 ﻿﻿# 📸 Photo/Video Organizer
 
-## 🇬🇧 English
+## 🇺🇸 English
 
 I created this free software to solve my own need: organizing photos and videos scattered across cloud, folders, external drives, USB sticks, etc.  
 Since it might be useful to others, I decided to make it available for everyone!  

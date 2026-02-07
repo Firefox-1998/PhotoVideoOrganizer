@@ -7,7 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Title>Photo/Video Search Duplicate Copy And Divide Year/Month</Title>
-    <Copyright>© 2025 G.L. aka Firefox_1998</Copyright>
+    <Copyright>© 2026 G.L. aka Firefox_1998</Copyright>
     <PackageIcon>photography-icon.png</PackageIcon>
     <Description>This program search "duplicates" photo, video and copy in destination path dividing the files by year and month of shooting</Description>
     <Platforms>x64</Platforms>
@@ -21,7 +21,6 @@
     <RepositoryUrl>https://github.com/Firefox-1998/PhotoVideoOrganizer</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <ApplicationIcon>photography-icon-Windows.ico</ApplicationIcon>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,6 +47,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\About.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -61,6 +65,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\About.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>About.Designer.cs</LastGenOutput>
@@ -87,20 +95,21 @@
     </None>
   </ItemGroup>
 
-  <Target Name="SetVersion" BeforeTargets="BeforeBuild">
+  <Target Name="SetVersion" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <!-- Giorni dal 1/1/2000 -->
       <Build>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2000-01-01"))).Days)</Build>
-
+  
       <!-- Secondi dall'inizio della giornata -->
       <Seconds>$([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds)</Seconds>
-
+  
       <!-- Divisione per 2 e troncamento -->
       <Revision>$([System.Math]::Floor($([MSBuild]::Divide($(Seconds), 2))))</Revision>
-
-      <!-- Componi la versione -->
-      <AssemblyVersion>1.0.$(Build).$(Revision)</AssemblyVersion>
-      <FileVersion>$(AssemblyVersion)</FileVersion>
+  
+      <!-- Versioni -->
+      <AssemblyVersion>1.1.0.0</AssemblyVersion>
+      <FileVersion>1.1.$(Build).$(Revision)</FileVersion>
+      <Version>1.1.$(Build).$(Revision)</Version>
     </PropertyGroup>
   </Target>
 </Project>

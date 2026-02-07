@@ -1,6 +1,6 @@
-﻿# 📸 Photo/Video Organizer
+﻿﻿# 📸 Photo/Video Organizer
 
-## 🇬🇧 English
+## 🇺🇸 English
 
 I created this free software to solve my own need: organizing photos and videos scattered across cloud, folders, external drives, USB sticks, etc.  
 Since it might be useful to others, I decided to make it available for everyone!  
@@ -79,7 +79,7 @@ This program uses third-party libraries, each with its own license:
 
 ---
 
-2025 © G.L. aka Firefox_1998
+2026 © G.L. Develop aka Firefox_1998
 
 ---
 
@@ -162,6 +162,6 @@ Questo programma utilizza librerie di terze parti, ciascuna con la propria licen
 
 ---
  
-2025 © G.L. aka Firefox_1998
+2026 © G.L. Develop aka Firefox_1998
 
 **Made with ❤️ by Firefox_1998**
