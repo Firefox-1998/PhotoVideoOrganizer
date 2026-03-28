@@ -1,4 +1,4 @@
-using PhotoMoveYearMonthFolder.Resources;
+﻿using PhotoMoveYearMonthFolder.Resources;
 using PhotoMoveYearMonthFolder.Services;
 
 namespace PhotoMoveYearMonthFolder
@@ -88,6 +88,14 @@ namespace PhotoMoveYearMonthFolder
         {
             // Only reset progress labels and bars, NOT the Cancel button state
             ResetProgressLabelsAndBars();
+        }
+
+        void IProgressReporter.ReportEnumerationProgress(int totalFound, int classifiedAsMedia, int classifiedAsOther)
+        {
+            SafeUpdateLabel(LblNumFiles,
+                string.Format(PhotoSearchMove.Btn_Start_Click_EnumeratingFiles,
+                    totalFound, classifiedAsMedia, classifiedAsOther));
+            SafeUpdateLabel(LblFileProc, "⏳");
         }
 
         #endregion

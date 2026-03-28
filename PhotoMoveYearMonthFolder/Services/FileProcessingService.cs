@@ -56,9 +56,9 @@ namespace PhotoMoveYearMonthFolder.Services
         {
             ResetState();
 
-            // Enumerate and classify files
+            // Enumerate and classify files with progress reporting
             (string[] validFiles, string[] invalidFiles) = await _fileEnumerator
-                .GetFilesAsync(sourceDir, rootOnly, cancellationToken);
+                .GetFilesAsync(sourceDir, rootOnly, _progressReporter, cancellationToken);
 
             // Process valid media files
             await ProcessMediaFilesAsync(validFiles, destDir, maxThreads, cancellationToken);

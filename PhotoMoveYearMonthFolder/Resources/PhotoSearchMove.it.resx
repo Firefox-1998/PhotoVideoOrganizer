@@ -183,4 +183,7 @@
   <data name="FrmPhotoSearchMove_lblLanguageUI" xml:space="preserve">
     <value>Lingua dell'interfaccia:</value>
   </data>
+  <data name="Btn_Start_Click_EnumeratingFiles" xml:space="preserve">
+    <value>Scansione: {0} file trovati ({1} media, {2} altri)</value>
+  </data>
 </root>

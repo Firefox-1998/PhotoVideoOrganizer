@@ -106,6 +106,15 @@ namespace PhotoMoveYearMonthFolder.Resources {
         }
         
         /// <summary>
+        ///   Cerca una stringa localizzata simile a Scanning: {0} files found ({1} media, {2} other).
+        /// </summary>
+        internal static string Btn_Start_Click_EnumeratingFiles {
+            get {
+                return ResourceManager.GetString("Btn_Start_Click_EnumeratingFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una stringa localizzata simile a Information.
         /// </summary>
         internal static string Btn_Start_Click_Informazioni {

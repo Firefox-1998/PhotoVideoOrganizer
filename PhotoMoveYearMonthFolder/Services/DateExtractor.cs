@@ -136,7 +136,20 @@ namespace PhotoMoveYearMonthFolder.Services
                 }
 
                 string possibleYear = fileName[startIndex..(startIndex + 4)];
-                string possibleMonth = fileName[(startIndex + 4)..(startIndex + 6)];
+
+                // Skip optional separator (dash, underscore, etc.) between year and month
+                int monthStart = startIndex + 4;
+                if (monthStart < fileName.Length && fileName[monthStart] is '-' or '_' or '.')
+                {
+                    monthStart++;
+                }
+
+                if (fileName.Length < monthStart + 2)
+                {
+                    continue;
+                }
+
+                string possibleMonth = fileName[monthStart..(monthStart + 2)];
 
                 if (IsValidYear(possibleYear))
                 {

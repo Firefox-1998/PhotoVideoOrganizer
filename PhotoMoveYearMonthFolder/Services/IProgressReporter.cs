@@ -17,6 +17,11 @@ namespace PhotoMoveYearMonthFolder.Services
         void ReportOtherFileProgress(int count, string fileName);
 
         /// <summary>
+        /// Reports progress during the file enumeration and classification phase.
+        /// </summary>
+        void ReportEnumerationProgress(int totalFound, int classifiedAsMedia, int classifiedAsOther);
+
+        /// <summary>
         /// Sets the progress bar to marquee (indeterminate) mode.
         /// </summary>
         void SetMediaProgressMarquee();

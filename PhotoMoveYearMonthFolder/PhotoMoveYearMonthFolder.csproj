@@ -95,21 +95,27 @@
     </None>
   </ItemGroup>
 
-  <Target Name="SetVersion" BeforeTargets="PrepareForBuild">
+    <!-- 🔄 Versionamento automatico -->
     <PropertyGroup>
-      <!-- Giorni dal 1/1/2000 -->
-      <Build>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2000-01-01"))).Days)</Build>
-  
-      <!-- Secondi dall'inizio della giornata -->
-      <Seconds>$([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds)</Seconds>
-  
-      <!-- Divisione per 2 e troncamento -->
-      <Revision>$([System.Math]::Floor($([MSBuild]::Divide($(Seconds), 2))))</Revision>
-  
-      <!-- Versioni -->
-      <AssemblyVersion>1.1.0.0</AssemblyVersion>
-      <FileVersion>1.1.$(Build).$(Revision)</FileVersion>
-      <Version>1.1.$(Build).$(Revision)</Version>
+        <!-- Giorni dal 1/1/2000 -->
+        <Build>$([System.DateTime]::UtcNow.Subtract($([System.DateTime]::Parse("2000-01-01"))).Days)</Build>
+        <!-- Secondi dall'inizio della giornata -->
+        <Seconds>$([System.DateTime]::UtcNow.TimeOfDay.TotalSeconds)</Seconds>
+        <!-- Divisione per 2 e troncamento -->
+        <Revision>$([System.Math]::Floor($([MSBuild]::Divide($(Seconds), 2))))</Revision>
+        <Version>1.5.$(Build).$(Revision)</Version>
+        <FileVersion>1.5.$(Build).$(Revision)</FileVersion>
+        <AssemblyVersion>1.5.$(Build).$(Revision)</AssemblyVersion>
     </PropertyGroup>
-  </Target>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <AssemblyVersion>1.5.$(Build).$(Revision)</AssemblyVersion>
+        <FileVersion>1.5.$(Build).$(Revision)</FileVersion>
+        <PackageVersion>1.5.$(Build).$(Revision)</PackageVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <AssemblyVersion>1.5.$(Build).$(Revision)</AssemblyVersion>
+        <FileVersion>1.5.$(Build).$(Revision)</FileVersion>
+        <PackageVersion>1.5.$(Build).$(Revision)</PackageVersion>
+    </PropertyGroup>
 </Project>

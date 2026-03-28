@@ -1,4 +1,5 @@
 using MetadataExtractor.Util;
+using PhotoMoveYearMonthFolder.Resources;
 
 namespace PhotoMoveYearMonthFolder.Services
 {
@@ -11,6 +12,12 @@ namespace PhotoMoveYearMonthFolder.Services
         #region Enums
 
         public enum MediaKind { Image, Video, Audio, Other }
+
+        #endregion
+
+        #region Constants
+
+        private const int EnumerationProgressInterval = 100;
 
         #endregion
 
@@ -88,6 +95,65 @@ namespace PhotoMoveYearMonthFolder.Services
             {
                 (IEnumerable<string> valid, IEnumerable<string> invalid) = GetFiles(rootPath, rootOnly);
                 return (valid.ToArray(), invalid.ToArray());
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves and materializes file lists, reporting enumeration progress.
+        /// </summary>
+        public Task<(string[] ValidFiles, string[] InvalidFiles)> GetFilesAsync(
+            string rootPath,
+            bool rootOnly,
+            IProgressReporter progressReporter,
+            CancellationToken cancellationToken)
+        {
+            return Task.Run(() =>
+            {
+                EnumerationOptions options = new()
+                {
+                    RecurseSubdirectories = !rootOnly,
+                    IgnoreInaccessible = true,
+                    AttributesToSkip = FileAttributes.System | FileAttributes.Hidden
+                };
+
+                IEnumerable<string> allFiles = EnumerateFilesSafe(rootPath, options);
+
+                List<string> validFiles = [];
+                List<string> invalidFiles = [];
+                int totalProcessed = 0;
+
+                foreach (string file in allFiles)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    if (ExcludedExtensions.Contains(Path.GetExtension(file)))
+                    {
+                        continue;
+                    }
+
+                    if (IsValidMediaBySniff(file))
+                    {
+                        validFiles.Add(file);
+                    }
+                    else
+                    {
+                        invalidFiles.Add(file);
+                    }
+
+                    totalProcessed++;
+
+                    if (totalProcessed == 1 || totalProcessed % EnumerationProgressInterval == 0)
+                    {
+                        progressReporter.ReportEnumerationProgress(
+                            totalProcessed, validFiles.Count, invalidFiles.Count);
+                    }
+                }
+
+                // Final progress report with exact counts
+                progressReporter.ReportEnumerationProgress(
+                    totalProcessed, validFiles.Count, invalidFiles.Count);
+
+                return (validFiles.ToArray(), invalidFiles.ToArray());
             }, cancellationToken);
         }
 
